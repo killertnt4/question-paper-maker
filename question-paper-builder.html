@@ -1,0 +1,2810 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Papercraft — Question Paper Builder</title>
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#f4f2ed;
+    --panel:#ffffff;
+    --line:#e7e4dc;
+    --line2:#d8d4c9;
+    --ink:#1d1f25;
+    --muted:#787c84;
+    --accent:#3b559f;
+    --accent2:#2e4485;
+    --soft:#eef0f7;
+    --danger:#8f4038;
+    --ok:#2f9e57;
+    --radius:13px;
+    --shadow:0 1px 2px rgba(24,26,32,.04), 0 10px 28px rgba(24,26,32,.05);
+  }
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    font-size:14px;-webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;background:#eeece5;
+    border:1px solid #e2dfd5;border-radius:4px;padding:0 3px}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    row-gap:8px;padding:10px 20px;background:rgba(255,255,255,.93);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{
+    width:31px;height:31px;border-radius:9px;flex:none;
+    background:linear-gradient(150deg,#3a63e0,#1c2f7d);
+    color:#fff;display:grid;place-items:center;
+    font-family:"Times New Roman",Georgia,serif;font-size:18px;font-weight:700;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 6px rgba(31,62,168,.28);
+  }
+  .brand-text{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+  .brand-text strong{font-size:15px;letter-spacing:-.2px;white-space:nowrap}
+  .brand-text span{font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+  .savestate{
+    margin-left:10px;display:inline-flex;align-items:center;gap:7px;
+    font-size:11.5px;color:var(--muted);white-space:nowrap;
+  }
+  .savestate::before{content:"";width:6px;height:6px;border-radius:50%;background:#a9adb4;transition:background .2s}
+  .savestate.ok::before{background:var(--ok)}
+  .savestate.warn::before{background:#d98a1e}
+  .topbar .actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .btn{
+    appearance:none;display:inline-flex;align-items:center;gap:8px;
+    border:2px solid #cdc7b8;background:#fbfaf6;color:#3d4148;
+    padding:9px 15px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
+    box-shadow:0 1px 0 rgba(24,26,32,.035);
+    transition:border-color .13s, background .13s, transform .06s, box-shadow .13s;
+  }
+  .btn:hover{border-color:#b2ab9b;background:#f3f1e9;box-shadow:0 2px 7px rgba(24,26,32,.06)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:3px solid rgba(47,85,212,.22);outline-offset:1px}
+  .btn.primary{background:#39519b;border-color:#2c3f7d;color:#fff;
+    box-shadow:0 2px 6px rgba(44,63,125,.18)}
+  .btn.primary:hover{background:#304583;border-color:#253668;color:#fff}
+  .btn.print{background:#fbfaf6;border-color:#cdc7b8;color:#3d4148}
+  .btn.print:hover{background:#f3f1e9;border-color:#b2ab9b;color:#2f333a}
+  .btn.danger-outline{background:#fbf3f1;border-color:#ddb7b0;color:#8f4038}
+  .btn.danger-outline:hover{background:#f6e8e4;border-color:#cea298;color:#7c372f}
+  .btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+  .btn.ghost:hover{background:#efede6;color:var(--ink)}
+  .btn.small{padding:7px 12px;font-size:13px;border-radius:8px;border-width:2px}
+  .btn.danger{color:#8f4038;border-color:#ddb7b0;background:#fbf3f1}
+  .btn.danger:hover{background:#f6e8e4;border-color:#cea298}
+  .btn svg{flex:none;width:16px;height:16px}
+  .btn.small svg{width:14px;height:14px}
+
+  /* ---------- layout ---------- */
+  .workspace{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,44%);
+    gap:20px;max-width:1780px;margin:0 auto;padding:20px 22px 70px;align-items:start;
+  }
+  .editor-col{min-width:0}
+
+  /* ---------- cards & fields ---------- */
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:19px 20px;margin-bottom:15px;
+  }
+  .card h2{
+    font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+    margin:0 0 15px;font-weight:700;display:flex;align-items:center;gap:9px;
+  }
+  .card h2 .step{
+    display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;
+    background:var(--soft);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:0;
+  }
+  .card-foot{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    margin-top:14px;padding-top:13px;border-top:1px solid var(--line);
+  }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .field > span{font-size:12px;font-weight:700;color:#555961;letter-spacing:.02em}
+  .field.span2{grid-column:1/-1}
+  .field input,.field select,.field textarea{
+    width:100%;border:1.5px solid var(--line2);border-radius:8px;background:#fff;color:var(--ink);
+    padding:9px 11px;font:inherit;font-size:14.5px;line-height:1.4;
+    transition:border-color .13s, box-shadow .13s;
+  }
+  .field textarea{resize:vertical;min-height:38px}
+  .field input:focus,.field select:focus,.field textarea:focus,textarea:focus,
+  .tbleditor input:focus{
+    outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--soft);
+  }
+  .inline-field{display:flex;align-items:center;gap:10px}
+  .inline-field input{flex:1;min-width:0}
+  .check{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#3f434a;
+    font-weight:600;cursor:pointer;white-space:nowrap}
+  .check input{accent-color:#39519b;width:18px;height:18px;margin:0}
+  .mini{font-size:12px;color:var(--muted);line-height:1.5}
+  .link{border:0;background:none;color:var(--accent);font-size:12px;font-weight:600;
+    cursor:pointer;padding:2px 4px;border-radius:5px}
+  .link:hover{background:var(--soft)}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+
+  /* ---------- instructions ---------- */
+  .insrow{display:flex;gap:9px;align-items:flex-start;margin-bottom:8px}
+  .insrow .lbl{width:28px;flex:none;padding-top:10px;font-size:13px;color:#555961;font-weight:700}
+  .insrow textarea{flex:1;min-height:42px;border:1.5px solid var(--line2);border-radius:8px;
+    padding:9px 11px;font:inherit;font-size:14.5px;line-height:1.45;resize:vertical;color:var(--ink)}
+  .insrow .icon-btn{margin-top:5px}
+
+  /* ---------- section cards ---------- */
+  .step-head{display:flex;align-items:flex-end;gap:12px;margin:22px 2px 11px}
+  .step-title{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+    font-weight:700;display:flex;align-items:center;gap:9px}
+  .step-title .step{
+    display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;
+    background:var(--soft);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:0;
+  }
+  .totals{font-weight:500;text-transform:none;letter-spacing:0;color:#9a9ea5;font-size:11.5px}
+  .step-links{margin-left:auto;display:flex;gap:4px}
+
+  .section-card{padding:0;overflow:hidden}
+  .sec-head{display:flex;align-items:center;gap:12px;padding:16px;user-select:none}
+  .sec-titles{min-width:0}
+  .sec-kicker{font-size:12px;letter-spacing:.12em;font-weight:800;color:var(--accent);text-transform:uppercase}
+  .sec-sum{font-size:13.5px;color:#5d6169;margin-top:3px}
+  .sec-sum b{color:#2f333a;font-weight:750}
+  .sec-actions{margin-left:auto;display:flex;gap:6px}
+  .icon-btn{
+    width:32px;height:32px;border:2px solid #d3cec1;border-radius:8px;background:#fbfaf6;
+    color:#555961;font-size:13px;font-weight:700;cursor:pointer;display:inline-grid;place-items:center;
+    transition:background .12s,color .12s,border-color .12s;
+  }
+  .icon-btn:hover{background:#f0eee6;border-color:#b8b2a3;color:#2f333a}
+  .icon-btn.danger{color:#8f4038;border-color:#ddb7b0;background:#fbf3f1}
+  .icon-btn.danger:hover{background:#f6e8e4;border-color:#cea298;color:#7c372f}
+  .sec-body{padding:0 16px 18px}
+  .sec-config{
+    display:grid;grid-template-columns:1.35fr .72fr .72fr .95fr;gap:11px;
+    padding:14px 0 6px;border-top:1px solid var(--line);
+  }
+  .sec-config.cols3{grid-template-columns:1.5fr .8fr .8fr}
+  .sec-config .field > span{font-size:12px}
+  .sec-config input,.sec-config select{padding:8px 10px;font-size:14px}
+  .qlist{margin-top:13px}
+  .addq{margin-top:11px;width:100%;justify-content:center;border-style:dashed;
+    color:#4a4e56;background:#fbfaf6;border-color:#cdc7b8}
+  .addq:hover{background:#f3f1e9;border-color:#b2ab9b;color:#2f333a}
+
+  /* ---------- question cards ---------- */
+  .qcard{border:1.5px solid var(--line);border-radius:11px;padding:13px 14px;background:#fff;
+    margin-bottom:10px;transition:border-color .13s, box-shadow .13s}
+  .qcard:focus-within{border-color:#bcc8ef;box-shadow:0 0 0 3px rgba(47,85,212,.06)}
+  .qhead{display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap}
+  .qnum{min-width:30px;height:26px;padding:0 8px;border-radius:7px;background:#252932;color:#fff;
+    font-size:13px;font-weight:750;display:inline-flex;align-items:center;justify-content:center}
+  .qtype{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#8b8f97;font-weight:750}
+  .qtools{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .tool{
+    font-size:12.5px;font-weight:750;color:#41454d;background:#f8f7f2;border:2px solid #d3cec1;
+    border-radius:8px;padding:6px 10px;cursor:pointer;transition:background .12s,border-color .12s;
+    line-height:1.3;display:inline-flex;align-items:center;gap:5px;
+  }
+  .tool:hover{background:#f0eee6;border-color:#b8b2a3}
+  .tool.remove{color:#8f4038;background:#fbf3f1;border-color:#ddb7b0}
+  .tool.remove:hover{background:#f6e8e4;border-color:#cea298}
+  .tool svg{width:13px;height:13px}
+  .qcard > textarea{
+    width:100%;min-height:48px;border:1.5px solid var(--line2);border-radius:8px;padding:9px 11px;
+    font:inherit;font-size:14.5px;line-height:1.5;resize:vertical;color:var(--ink);
+  }
+  .filehide{display:none}
+
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin-top:9px}
+  .opt{display:flex;align-items:center;gap:7px;min-width:0}
+  .opt > span{width:20px;flex:none;font-size:13.5px;color:#4f535b;font-weight:700}
+  .opt input{width:100%;min-width:0;border:1.5px solid var(--line2);border-radius:7px;
+    padding:7px 9px;font:inherit;font-size:14px;color:var(--ink)}
+
+  .subs{margin-top:10px;border-left:3px solid #dfe5f5;padding-left:11px}
+  .subrow{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px}
+  .subrow .lbl{width:28px;flex:none;padding-top:10px;font-size:12.5px;color:#555961;font-weight:650}
+  .subrow textarea{flex:1;min-width:0;border:1.5px solid var(--line2);border-radius:8px;
+    padding:8px 10px;font:inherit;font-size:14px;line-height:1.5;resize:vertical;color:var(--ink);min-height:38px}
+  .subrow .icon-btn{width:30px;height:30px;margin-top:4px;flex:none}
+
+  .imgrow{display:flex;align-items:center;gap:11px;margin-top:8px;padding:8px;
+    border:1px dashed var(--line2);border-radius:8px;background:#faf9f5}
+  .imgrow img{max-height:56px;max-width:96px;border-radius:4px;border:1px solid var(--line);
+    background:#fff;object-fit:contain}
+  .imgmeta{flex:1;min-width:0}
+  .range{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+  .range input[type=range]{accent-color:var(--accent);width:120px;max-width:45%}
+  .range b{color:#4c5058;font-weight:650;font-size:12.5px}
+
+  .tbleditor{margin-top:9px;padding:10px;border:1.5px dashed var(--line2);border-radius:8px;background:#faf9f5}
+  .tb-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .tb-tools .check{font-size:12.5px;margin-right:4px}
+  table.tbl-edit{border-collapse:collapse;width:100%;background:#fff}
+  table.tbl-edit td{border:1px solid #ddd9cf;padding:0}
+  table.tbl-edit input{width:100%;border:0;border-radius:0;padding:6px 7px;font:inherit;
+    font-size:13.5px;background:transparent;min-width:56px}
+  table.tbl-edit tr:first-child input{font-weight:700;background:#fcfbf7}
+
+  .orbox{margin-top:11px;padding:12px;border:2px dashed #d8d2e2;border-radius:10px;background:#fbfafe}
+  .orhead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .orlabel{font-size:11px;letter-spacing:.11em;text-transform:uppercase;font-weight:800;color:#5f5a72}
+  .orhead .icon-btn{margin-left:auto;width:30px;height:30px}
+  .orbox textarea{width:100%;min-height:42px;border:1.5px solid #d8d2e2;border-radius:7px;
+    padding:8px 10px;font:inherit;font-size:14px;line-height:1.5;resize:vertical;color:var(--ink);
+    background:#fff}
+  .ortools{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+  .add-section{
+    width:100%;padding:16px;border:2px dashed #c9c3b4;border-radius:12px;background:#fbfaf6;
+    color:#4a4e56;font-size:14.5px;font-weight:750;cursor:pointer;transition:all .14s;
+  }
+  .add-section:hover{background:#f3f1e9;border-color:#b2ab9b;color:#2f333a}
+
+  /* ---------- preview ---------- */
+  .preview-col{position:sticky;top:76px;height:calc(100vh - 96px);min-width:0}
+  .preview-shell{
+    display:flex;flex-direction:column;height:100%;overflow:hidden;
+    background:#e8e5dd;border:1px solid var(--line);border-radius:14px;
+  }
+  .preview-bar{
+    display:flex;align-items:center;gap:8px;padding:9px 14px;flex:none;
+    border-bottom:1px solid #d9d5cb;background:rgba(255,255,255,.62);
+    font-size:11.5px;font-weight:650;color:#5b5f67;
+  }
+  .preview-bar .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);
+    box-shadow:0 0 0 3px rgba(47,158,87,.13)}
+  .pv-meta{margin-left:auto;font-weight:500;color:#8f938f}
+  .preview-scroll{flex:1;overflow:auto;padding:16px}
+  .page-holder{position:relative;margin:0 auto}
+  .page{
+    position:absolute;top:0;left:0;width:210mm;min-height:297mm;padding:14mm 16mm;
+    background:#fff;color:#000;transform-origin:top left;
+    font-family:"Times New Roman",Times,Georgia,serif;font-size:11pt;line-height:1.45;
+    box-shadow:0 1px 4px rgba(24,26,32,.10),0 22px 60px rgba(24,26,32,.10);
+  }
+  .page sup{font-size:7.5pt;line-height:0}
+  .page sub{font-size:7.5pt;line-height:0}
+  .qblank{color:#b7b3a8;font-style:italic}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:26px;z-index:100;transform:translate(-50%,14px);
+    background:#22252c;color:#fff;font-size:12.5px;font-weight:600;padding:10px 17px;
+    border-radius:10px;opacity:0;pointer-events:none;
+    box-shadow:0 10px 30px rgba(0,0,0,.22);transition:opacity .2s,transform .2s;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:1180px){
+    .workspace{grid-template-columns:1fr}
+    .preview-col{position:static;height:72vh;order:2}
+  }
+  @media (max-width:720px){
+    .workspace{padding:14px 12px 60px}
+    .topbar{padding:9px 12px;gap:9px}
+    .brand-text span{display:none}
+    .savestate{display:none}
+    .grid2{grid-template-columns:1fr}
+    .field.span2{grid-column:auto}
+    .sec-config{grid-template-columns:1fr 1fr}
+    .card{padding:15px}
+    .btn{padding:7px 10px;font-size:12px}
+  }
+
+  /* ---------- print ---------- */
+  @media print{
+    body{background:#fff}
+    .topbar,.editor-col,.preview-bar,.toast{display:none!important}
+    .workspace{display:block;padding:0;max-width:none}
+    .preview-col{position:static;height:auto}
+    .preview-shell{background:none;border:0;height:auto;overflow:visible;border-radius:0}
+    .preview-scroll{overflow:visible;padding:0}
+    .page-holder{width:auto!important;height:auto!important}
+    .page{
+      position:static!important;transform:none!important;width:auto!important;
+      min-height:0;padding:0;margin:0;box-shadow:none!important;
+    }
+    .qblank{display:none}
+    @page{size:A4;margin:14mm 16mm}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">Q</div>
+    <div class="brand-text">
+      <strong>Papercraft</strong>
+      <span>question paper builder</span>
+    </div>
+  </div>
+  <div class="savestate" id="savestate">Auto-saves in this browser</div>
+  <div class="actions">
+    <button class="btn print" data-act="print" title="Print, or save as PDF">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+      Print
+    </button>
+    <button class="btn primary" data-act="export" title="Download an editable Word file (.docx)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Download .docx
+    </button>
+    <button class="btn danger-outline" data-act="reset" title="Start a fresh paper">Reset</button>
+  </div>
+</header>
+
+<main class="workspace">
+  <section class="editor-col">
+
+    <div class="card">
+      <h2><span class="step">1</span> Paper details</h2>
+      <div id="meta-fields"></div>
+      <div class="card-foot" id="meta-foot"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">2</span> General instructions</h2>
+      <div id="instr-list"></div>
+      <div class="row-actions">
+        <button class="btn small" data-act="add-instr">+ Add instruction</button>
+        <button class="btn small" data-act="auto-instr" title="Build a section summary from the counts below">Auto-add section summary</button>
+      </div>
+    </div>
+
+    <div class="step-head">
+      <div class="step-title"><span class="step">3</span> Sections &amp; questions</div>
+      <span class="totals" id="totals"></span>
+    </div>
+
+    <div id="sections"></div>
+    <button class="add-section" data-act="add-section">+ Add a new section</button>
+
+  </section>
+
+  <aside class="preview-col">
+    <div class="preview-shell">
+      <div class="preview-bar">
+        <span class="dot"></span> Live preview
+        <span class="pv-meta">A4 &middot; Word-ready</span>
+      </div>
+      <div class="preview-scroll" id="preview-scroll">
+        <div class="page-holder" id="page-holder">
+          <div class="page" id="paper"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Papercraft native DOCX exporter (embedded, dependency-free)
+   ============================================================ */
+/*
+ * Papercraft DOCX exporter
+ * ------------------------------------------------------------------
+ * Standalone, dependency-free writer for the question-paper model used
+ * by question-paper-builder.html.
+ *
+ * Public API
+ *   buildDocx(state)      -> Uint8Array  (the complete .docx package)
+ *   buildDocxBlob(state)  -> Blob        (browser download convenience)
+ *
+ * Browser: window.PapercraftDocx = { buildDocx, buildDocxBlob }
+ * Node:    module.exports       = { buildDocx, buildDocxBlob }
+ *
+ * The package is written by hand: OPC parts + store-only ZIP (CRC32).
+ * No imports, no network, no external libraries.
+ */
+(function (factoryRoot) {
+  "use strict";
+
+  /* ================================================================
+     Constants / units
+     ================================================================ */
+
+  var TWIPS_PER_CM = 566.9291338582677;
+  var EMU_PER_CM = 360000;
+
+  var PAGE_W = 11906;             // A4 width in twips
+  var PAGE_H = 16838;             // A4 height in twips
+  var MARGIN_L = 907;
+  var MARGIN_R = 907;
+  var MARGIN_T = 964;
+  var MARGIN_B = 964;
+  var TEXT_W = PAGE_W - MARGIN_L - MARGIN_R;   // 10092 twips
+
+  var Q_INDENT = 567;             // 1 cm question number gutter
+  var OPT_INDENT = 340;           // ~0.6 cm
+  /*
+   * "(iii)" is wider than 0.6 cm at 11 pt, so the label gutter is
+   * 0.75 cm and the text starts at 1.35 cm. This keeps the tab stop
+   * effective for every roman numeral up to (xii).
+   */
+  var SUB_LABEL = 425;            // 0.75 cm
+  var SUB_TEXT = 765;             // 1.35 cm
+  var LINE = 312;                 // 1.30 line spacing (240 = single)
+  var CELL_SIZE = 21;             // 10.5 pt in half-points
+  var BODY_SIZE = 22;             // 11 pt in half-points
+  var MAX_IMAGE_H_CM = 22;
+  var DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+  var NS_W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+  var NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  var NS_WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+  var NS_A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+  var NS_PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture";
+
+  var XML_DECL = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+
+  var NO_BORDERS =
+    '<w:tblBorders>' +
+      '<w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/>' +
+      '<w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/>' +
+    '</w:tblBorders>';
+
+  var ZERO_CELL_MAR =
+    '<w:tblCellMar>' +
+      '<w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>' +
+      '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/>' +
+    '</w:tblCellMar>';
+
+  var TAB_LOOK =
+    '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" ' +
+    'w:lastColumn="0" w:noHBand="0" w:noVBand="0"/>';
+
+  /* ================================================================
+     Small utilities
+     ================================================================ */
+
+  function str(v) {
+    return v == null ? "" : String(v);
+  }
+
+  function num(v, fallback) {
+    var n = Number(v);
+    return isFinite(n) ? n : fallback;
+  }
+
+  function countOf(v) {
+    var n = parseInt(v, 10);
+    return isFinite(n) && n > 0 ? Math.min(200, n) : 0;
+  }
+
+  function untested(v) {
+    return str(v).replace(/^\s+|\s+$/g, "");
+  }
+
+  function letterFor(index) {
+    if (index >= 0 && index < 26) return String.fromCharCode(65 + index);
+    return String(index + 1);
+  }
+
+  function romanFor(n) {
+    n = Math.max(1, Math.floor(n));
+    var map = [
+      [1000, "m"], [900, "cm"], [500, "d"], [400, "cd"], [100, "c"], [90, "xc"],
+      [50, "l"], [40, "xl"], [10, "x"], [9, "ix"], [5, "v"], [4, "iv"], [1, "i"]
+    ];
+    var out = "";
+    for (var i = 0; i < map.length; i++) {
+      while (n >= map[i][0]) {
+        out += map[i][1];
+        n -= map[i][0];
+      }
+    }
+    return out;
+  }
+
+  function sanitizeText(v) {
+    return str(v)
+      .replace(/\r\n?/g, "\n")
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, "")
+      .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/g, "")
+      .replace(/(^|[^\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "$1");
+  }
+
+  function escapeXml(s) {
+    return sanitizeText(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function utf8Encode(s) {
+    s = String(s);
+    if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(s);
+    if (typeof Buffer !== "undefined") return new Uint8Array(Buffer.from(s, "utf8"));
+    var enc = encodeURIComponent(s);
+    var bytes = [];
+    for (var i = 0; i < enc.length; i++) {
+      if (enc[i] === "%") {
+        bytes.push(parseInt(enc.substr(i + 1, 2), 16));
+        i += 2;
+      } else {
+        bytes.push(enc.charCodeAt(i));
+      }
+    }
+    return new Uint8Array(bytes);
+  }
+
+  function base64ToBytes(b64) {
+    b64 = String(b64).replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4) b64 += "=";
+    if (typeof Buffer !== "undefined" && typeof Buffer.from === "function") {
+      return new Uint8Array(Buffer.from(b64, "base64"));
+    }
+    if (typeof atob === "function") {
+      var bin = atob(b64);
+      var out = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+    throw new Error("No base64 decoder available in this environment.");
+  }
+
+  /* ================================================================
+     Rich text -> WordprocessingML runs
+     ================================================================ */
+
+  function rPrXml(props) {
+    var o = props || {};
+    var s = "";
+    if (o.b) s += "<w:b/><w:bCs/>";
+    if (o.i) s += "<w:i/><w:iCs/>";
+    if (o.color) s += '<w:color w:val="' + escapeXml(o.color) + '"/>';
+    if (o.spacing != null) s += '<w:spacing w:val="' + Math.round(o.spacing) + '"/>';
+    if (o.sz) s += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
+    if (o.u) s += '<w:u w:val="single"/>';
+    if (o.vert) s += '<w:vertAlign w:val="' + o.vert + '"/>';
+    return s ? "<w:rPr>" + s + "</w:rPr>" : "";
+  }
+
+  function runXml(text, props) {
+    if (text === "" || text == null) return "";
+    return "<w:r>" + rPrXml(props) +
+      '<w:t xml:space="preserve">' + escapeXml(text) + "</w:t></w:r>";
+  }
+
+  function tabRun() {
+    return "<w:r><w:tab/></w:r>";
+  }
+
+  function breakRun() {
+    return "<w:r><w:br/></w:r>";
+  }
+
+  function withVert(props, vert) {
+    var o = {};
+    var k;
+    for (k in (props || {})) if (Object.prototype.hasOwnProperty.call(props, k)) o[k] = props[k];
+    o.vert = vert;
+    return o;
+  }
+
+  /*
+   * Parse the paper's tiny markup language:
+   *   x^2  x^{n+1}  -> superscript
+   *   x_1  x_{n+1}  -> subscript
+   *   newlines      -> <w:br/>
+   * Everything is escaped and unicode-safe.
+   */
+  function richRuns(raw, props) {
+    var s = sanitizeText(raw).replace(/\t/g, "    ");
+    var re = /\^\{([^}]*)\}|\^(-?\d+|[A-Za-z])|_\{([^}]*)\}|_([A-Za-z0-9])|\n/g;
+    var out = "";
+    var last = 0;
+    var m;
+    while ((m = re.exec(s)) !== null) {
+      if (m.index > last) out += runXml(s.slice(last, m.index), props);
+      if (m[0] === "\n") {
+        out += breakRun();
+      } else if (m[0].charAt(0) === "^") {
+        out += runXml(m[1] != null ? m[1] : m[2], withVert(props, "superscript"));
+      } else {
+        out += runXml(m[3] != null ? m[3] : m[4], withVert(props, "subscript"));
+      }
+      last = re.lastIndex;
+    }
+    if (last < s.length) out += runXml(s.slice(last), props);
+    return out;
+  }
+
+  function plainLinesRuns(lines, props) {
+    var out = "";
+    for (var i = 0; i < lines.length; i++) {
+      if (i) out += breakRun();
+      out += runXml(lines[i], props);
+    }
+    return out;
+  }
+
+  /* ================================================================
+     Paragraph / rule helpers
+     ================================================================ */
+
+  function pPrXml(o) {
+    o = o || {};
+    var s = "";
+    if (o.keepNext) s += "<w:keepNext/>";
+    if (o.keepLines) s += "<w:keepLines/>";
+    s += "<w:widowControl/>";
+    if (o.borderBottom) {
+      s += '<w:pBdr><w:bottom w:val="single" w:sz="' + (o.borderSz || 8) +
+        '" w:space="1" w:color="000000"/></w:pBdr>';
+    }
+    if (o.tabs && o.tabs.length) {
+      var seen = {};
+      var tabs = "";
+      for (var i = 0; i < o.tabs.length; i++) {
+        var t = o.tabs[i];
+        var pos = Math.round(t.pos);
+        if (pos < 0 || seen[pos]) continue;
+        seen[pos] = true;
+        tabs += '<w:tab w:val="' + (t.val || "left") + '" w:pos="' + pos + '"/>';
+      }
+      if (tabs) s += "<w:tabs>" + tabs + "</w:tabs>";
+    }
+    var sp = [];
+    if (o.before != null) sp.push('w:before="' + Math.round(o.before) + '"');
+    if (o.after != null) sp.push('w:after="' + Math.round(o.after) + '"');
+    if (o.line != null) {
+      sp.push('w:line="' + Math.round(o.line) + '"');
+      sp.push('w:lineRule="' + (o.lineRule || "auto") + '"');
+    }
+    if (sp.length) s += "<w:spacing " + sp.join(" ") + "/>";
+    if (o.indLeft != null || o.indHanging != null || o.indFirst != null) {
+      var ind = "<w:ind";
+      if (o.indLeft != null) ind += ' w:left="' + Math.round(o.indLeft) + '"';
+      if (o.indHanging != null) ind += ' w:hanging="' + Math.round(o.indHanging) + '"';
+      if (o.indFirst != null) ind += ' w:firstLine="' + Math.round(o.indFirst) + '"';
+      ind += "/>";
+      s += ind;
+    }
+    if (o.align) s += '<w:jc w:val="' + o.align + '"/>';
+    return s ? "<w:pPr>" + s + "</w:pPr>" : "";
+  }
+
+  function pXml(runs, opts) {
+    return "<w:p>" + pPrXml(opts) + (runs || "") + "</w:p>";
+  }
+
+  function ruleXml(before, after) {
+    return '<w:p><w:pPr>' +
+      '<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="1" w:color="000000"/></w:pBdr>' +
+      '<w:spacing w:before="' + (before || 0) + '" w:after="' + (after || 0) +
+        '" w:line="20" w:lineRule="exact"/>' +
+      '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>' +
+      '</w:pPr></w:p>';
+  }
+
+  function spacerXml(twips) {
+    return '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="' +
+      Math.max(20, Math.round(twips)) + '" w:lineRule="exact"/>' +
+      '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>';
+  }
+
+  /* ================================================================
+     Borderless layout tables (top-level only; never nested)
+     ================================================================ */
+
+  function cellXml(width, paragraphXml, valign) {
+    return '<w:tc><w:tcPr><w:tcW w:w="' + width + '" w:type="dxa"/>' +
+      '<w:vAlign w:val="' + (valign || "top") + '"/></w:tcPr>' +
+      paragraphXml + "</w:tc>";
+  }
+
+  function headerBlockXml(leftLines, rightLines) {
+    var lp = pXml(plainLinesRuns(leftLines, { sz: BODY_SIZE }), {
+      align: "left", before: 140, after: 0, line: 308
+    });
+    var rp = pXml(plainLinesRuns(rightLines, { sz: BODY_SIZE }), {
+      align: "right", before: 140, after: 0, line: 308
+    });
+    return '<w:tbl><w:tblPr><w:tblW w:w="' + TEXT_W + '" w:type="dxa"/>' +
+      NO_BORDERS + '<w:tblLayout w:type="fixed"/>' + ZERO_CELL_MAR + TAB_LOOK +
+      '</w:tblPr><w:tblGrid><w:gridCol w:w="6055"/><w:gridCol w:w="4037"/></w:tblGrid>' +
+      '<w:tr><w:trPr><w:cantSplit/></w:trPr>' +
+      cellXml(6055, lp, "top") + cellXml(4037, rp, "top") +
+      "</w:tr></w:tbl>";
+  }
+
+  function sectionHeadingXml(letter, count, marks) {
+    var total = count * marks;
+    var center = pXml(runXml("SECTION \u2013 " + letter, {
+      b: true, u: true, sz: 24, spacing: 40
+    }), { align: "center", keepNext: true, before: 0, after: 0, line: 300 });
+    var right = pXml(runXml(count + " \u00D7 " + marks + " = " + total, {
+      b: true, sz: CELL_SIZE
+    }), { align: "right", keepNext: true, before: 0, after: 0, line: 300 });
+    return '<w:tbl><w:tblPr><w:tblW w:w="' + TEXT_W + '" w:type="dxa"/>' +
+      NO_BORDERS + '<w:tblLayout w:type="fixed"/>' + ZERO_CELL_MAR + TAB_LOOK +
+      '</w:tblPr><w:tblGrid><w:gridCol w:w="2018"/><w:gridCol w:w="6056"/>' +
+      '<w:gridCol w:w="2018"/></w:tblGrid>' +
+      '<w:tr><w:trPr><w:cantSplit/></w:trPr>' +
+      cellXml(2018, pXml("", { before: 0, after: 0, line: 240 }), "center") +
+      cellXml(6056, center, "center") +
+      cellXml(2018, right, "center") +
+      "</w:tr></w:tbl>";
+  }
+
+  function dataTableXml(tbl) {
+    if (!tbl || !Array.isArray(tbl.rows) || !tbl.rows.length) return "";
+    var rows = tbl.rows;
+    var cols = 0;
+    var i, j;
+    for (i = 0; i < rows.length; i++) {
+      var r = Array.isArray(rows[i]) ? rows[i] : [];
+      if (r.length > cols) cols = r.length;
+    }
+    if (!cols) return "";
+
+    var totalW = TEXT_W - Q_INDENT;
+    var baseW = Math.floor(totalW / cols);
+    var grid = [];
+    for (i = 0; i < cols; i++) {
+      grid.push(i === cols - 1 ? totalW - baseW * (cols - 1) : baseW);
+    }
+
+    var cellBorder = ' w:val="single" w:sz="4" w:space="0" w:color="000000"';
+    var xml = '<w:tbl><w:tblPr><w:tblW w:w="' + totalW + '" w:type="dxa"/>' +
+      '<w:tblInd w:w="' + Q_INDENT + '" w:type="dxa"/>' +
+      '<w:tblBorders>' +
+        "<w:top" + cellBorder + "/><w:left" + cellBorder + "/>" +
+        "<w:bottom" + cellBorder + "/><w:right" + cellBorder + "/>" +
+        "<w:insideH" + cellBorder + "/><w:insideV" + cellBorder + "/>" +
+      "</w:tblBorders>" +
+      '<w:tblLayout w:type="fixed"/>' +
+      '<w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="100" w:type="dxa"/>' +
+        '<w:bottom w:w="40" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar>' +
+      TAB_LOOK + "</w:tblPr><w:tblGrid>";
+    for (i = 0; i < cols; i++) xml += '<w:gridCol w:w="' + grid[i] + '"/>';
+    xml += "</w:tblGrid>";
+
+    for (i = 0; i < rows.length; i++) {
+      var row = Array.isArray(rows[i]) ? rows[i] : [];
+      var isHead = !!tbl.header && i === 0;
+      xml += '<w:tr><w:trPr><w:cantSplit/>' + (isHead ? "<w:tblHeader/>" : "") + "</w:trPr>";
+      for (j = 0; j < cols; j++) {
+        var txt = str(row[j]);
+        var align = j === 0 ? "left" : "center";
+        var runs = richRuns(txt, { sz: CELL_SIZE, b: isHead });
+        var cp = pXml(runs, { align: align, before: 0, after: 0, line: 264 });
+        xml += '<w:tc><w:tcPr><w:tcW w:w="' + grid[j] + '" w:type="dxa"/>' +
+          '<w:vAlign w:val="top"/></w:tcPr>' + cp + "</w:tc>";
+      }
+      xml += "</w:tr>";
+    }
+    xml += "</w:tbl>";
+    return xml;
+  }
+
+  /* ================================================================
+     Images
+     ================================================================ */
+
+  function sniffKind(bytes, declared) {
+    if (bytes.length >= 8 &&
+        bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47 &&
+        bytes[4] === 0x0D && bytes[5] === 0x0A && bytes[6] === 0x1A && bytes[7] === 0x0A) {
+      return "png";
+    }
+    if (bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+      return "jpg";
+    }
+    if (declared === "png") return "png";
+    if (declared === "jpeg" || declared === "jpg") return "jpg";
+    return null;
+  }
+
+  function decodeDataUrl(src) {
+    if (typeof src !== "string") return null;
+    var m = /^data:image\/([a-z0-9.+-]+);base64,([\s\S]*)$/i.exec(src.replace(/^\s+|\s+$/g, ""));
+    if (!m) return null;
+    var declared = m[1].toLowerCase();
+    var bytes;
+    try {
+      bytes = base64ToBytes(m[2]);
+    } catch (e) {
+      return null;
+    }
+    if (!bytes || bytes.length < 12) return null;
+    var kind = sniffKind(bytes, declared);
+    if (!kind) return null;
+    return { bytes: bytes, kind: kind };
+  }
+
+  function ratioFromPng(bytes) {
+    if (bytes.length < 24) return 0;
+    var w = ((bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19]) >>> 0;
+    var h = ((bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23]) >>> 0;
+    return w > 0 && h > 0 ? h / w : 0;
+  }
+
+  function ratioFromJpeg(bytes) {
+    var len = bytes.length;
+    var i = 2;
+    while (i + 9 < len) {
+      if (bytes[i] !== 0xFF) { i++; continue; }
+      var marker = bytes[i + 1];
+      if (marker === 0xFF) { i++; continue; }
+      if (marker === 0xD8 || marker === 0xD9) { i += 2; continue; }
+      if (marker >= 0xD0 && marker <= 0xD7) { i += 2; continue; }
+      if (marker === 0x01) { i += 2; continue; }
+      if (i + 3 >= len) break;
+      var segLen = (bytes[i + 2] << 8) | bytes[i + 3];
+      if (segLen < 2) break;
+      var isSof = marker >= 0xC0 && marker <= 0xCF &&
+        marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC;
+      if (isSof) {
+        if (i + 8 >= len) break;
+        var h = (bytes[i + 5] << 8) | bytes[i + 6];
+        var w = (bytes[i + 7] << 8) | bytes[i + 8];
+        return w > 0 && h > 0 ? h / w : 0;
+      }
+      i += 2 + segLen;
+    }
+    return 0;
+  }
+
+  function imageRatioFromBytes(bytes, kind) {
+    try {
+      if (kind === "png") return ratioFromPng(bytes);
+      if (kind === "jpg") return ratioFromJpeg(bytes);
+    } catch (e) { /* ignore malformed headers */ }
+    return 0;
+  }
+
+  function imageRunXml(src, widthCm, ratio, maxWidthCm, ctx) {
+    var decoded = decodeDataUrl(src);
+    if (!decoded) return "";
+    var kind = decoded.kind;
+    var w = num(widthCm, 10);
+    if (!(w > 0)) w = 10;
+    var maxW = num(maxWidthCm, (TEXT_W - Q_INDENT) / TWIPS_PER_CM);
+    if (!(maxW > 0)) maxW = 16;
+    if (w > maxW) w = maxW;
+    if (w < 0.5) w = 0.5;
+
+    var r = num(ratio, 0);
+    if (!(r > 0) || !isFinite(r)) r = imageRatioFromBytes(decoded.bytes, kind);
+    if (!(r > 0) || !isFinite(r)) r = 0.7;
+
+    var h = w * r;
+    if (h > MAX_IMAGE_H_CM) {
+      h = MAX_IMAGE_H_CM;
+      w = h / r;
+    }
+
+    var cx = Math.max(1, Math.round(w * EMU_PER_CM));
+    var cy = Math.max(1, Math.round(h * EMU_PER_CM));
+    var index = ctx.images.length + 1;
+    var name = "image" + index + "." + kind;
+    var rid = "rId" + (ctx.nextRelId++);
+    var docId = ctx.nextDocPrId++;
+    var mime = kind === "png" ? "image/png" : "image/jpeg";
+
+    ctx.images.push({ name: name, bytes: decoded.bytes, mime: mime, rid: rid });
+
+    return "<w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">" +
+      '<wp:extent cx="' + cx + '" cy="' + cy + '"/>' +
+      '<wp:effectExtent l="0" t="0" r="0" b="0"/>' +
+      '<wp:docPr id="' + docId + '" name="Picture ' + docId + '"/>' +
+      '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+      '<a:graphic><a:graphicData uri="' + NS_PIC + '">' +
+        '<pic:pic><pic:nvPicPr>' +
+          '<pic:cNvPr id="' + docId + '" name="' + escapeXml(name) + '"/>' +
+          '<pic:cNvPicPr/>' +
+        '</pic:nvPicPr>' +
+        '<pic:blipFill><a:blip r:embed="' + rid + '"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+        '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cx + '" cy="' + cy + '"/></a:xfrm>' +
+          '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>' +
+      '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+  }
+
+  /* ================================================================
+     Header, instructions, questions, sections
+     ================================================================ */
+
+  function hasOptionText(options) {
+    for (var i = 0; i < options.length; i++) {
+      if (untested(options[i])) return true;
+    }
+    return false;
+  }
+
+  function optionsXml(options, perRow) {
+    perRow = perRow === 4 ? 4 : 2;
+    var avail = TEXT_W - OPT_INDENT;
+    var colW = Math.floor(avail / perRow);
+    var out = "";
+
+    for (var r = 0; r < 4; r += perRow) {
+      var runs = "";
+      var tabs = [];
+      for (var c = 0; c < perRow; c++) {
+        var idx = r + c;
+        if (idx > 3) break;
+        var labelPos = OPT_INDENT + c * colW;
+        var textPos = labelPos + 340;
+        tabs.push({ pos: labelPos });
+        tabs.push({ pos: textPos });
+        if (c > 0) runs += tabRun();
+        runs += runXml(String.fromCharCode(97 + idx) + ")", { sz: BODY_SIZE });
+        runs += tabRun();
+        runs += richRuns(options[idx] || "", { sz: BODY_SIZE });
+      }
+      out += pXml(runs, {
+        indLeft: OPT_INDENT, before: 0, after: 40, line: 312, tabs: tabs
+      });
+    }
+    return out;
+  }
+
+  function subpartsXml(list, props) {
+    var out = "";
+    for (var i = 0; i < list.length; i++) {
+      out += pXml(
+        runXml("(" + romanFor(i + 1) + ")", { sz: BODY_SIZE }) +
+        tabRun() +
+        richRuns(list[i], { sz: BODY_SIZE }),
+        {
+          indLeft: SUB_TEXT, indHanging: SUB_LABEL,
+          tabs: [{ pos: SUB_TEXT }],
+          before: 0, after: 40, line: LINE
+        }
+      );
+    }
+    return out;
+  }
+
+  function questionXml(q, num, sec, ctx) {
+    q = q || {};
+    var options = Array.isArray(q.options) ? q.options : ["", "", "", ""];
+    var subparts = Array.isArray(q.subparts) ? q.subparts : [];
+    var orOptions = Array.isArray(q.orOptions) ? q.orOptions : ["", "", "", ""];
+    var orSubparts = Array.isArray(q.orSubparts) ? q.orSubparts : [];
+    var text = str(q.text);
+    var orText = str(q.orText);
+    var isMcq = sec.type === "mcq" || hasOptionText(options);
+    var table = q.table && Array.isArray(q.table.rows) && q.table.rows.length ? q.table : null;
+    var orTable = q.orTable && Array.isArray(q.orTable.rows) && q.orTable.rows.length ? q.orTable : null;
+    var orHas = !!q.useOr && (
+      untested(orText) || !!q.orImage || orSubparts.length > 0 ||
+      (sec.type === "mcq" && hasOptionText(orOptions)) || !!orTable
+    );
+    var maxW = (TEXT_W - Q_INDENT) / TWIPS_PER_CM;
+
+    var following = !!q.image || isMcq || !!table || subparts.length > 0 || orHas;
+
+    var out = pXml(
+      runXml(num + ".", { sz: BODY_SIZE }) + tabRun() + richRuns(text, { sz: BODY_SIZE }),
+      {
+        indLeft: Q_INDENT, indHanging: Q_INDENT,
+        tabs: [{ pos: Q_INDENT }],
+        before: 100, after: 60, line: LINE,
+        keepNext: following
+      }
+    );
+
+    if (q.image) {
+      var img = imageRunXml(q.image, q.imageWidth, q.imageRatio, maxW, ctx);
+      if (img) {
+        out += pXml(img, {
+          indLeft: Q_INDENT, before: 60, after: 80, line: 240, lineRule: "auto"
+        });
+      }
+    }
+
+    if (isMcq) {
+      out += optionsXml(options, sec.optionsPerRow);
+    }
+
+    if (table) {
+      var t = dataTableXml(table);
+      if (t) out += t + spacerXml(80);
+    }
+
+    if (subparts.length) out += subpartsXml(subparts, { sz: BODY_SIZE });
+
+    if (orHas) {
+      out += pXml(runXml("OR", { b: true, sz: BODY_SIZE }), {
+        align: "center", before: 120, after: 80, line: 300, keepNext: true
+      });
+      if (untested(orText)) {
+        out += pXml(richRuns(orText, { sz: BODY_SIZE }), {
+          indLeft: Q_INDENT, before: 0, after: 60, line: LINE,
+          keepNext: !!q.orImage || orSubparts.length > 0
+        });
+      }
+      if (q.orImage) {
+        var oimg = imageRunXml(q.orImage, q.orImageWidth, q.orImageRatio, maxW, ctx);
+        if (oimg) {
+          out += pXml(oimg, {
+            indLeft: Q_INDENT, before: 60, after: 80, line: 240, lineRule: "auto",
+            keepNext: orSubparts.length > 0
+          });
+        }
+      }
+      if (sec.type === "mcq") {
+        out += optionsXml(orOptions, sec.optionsPerRow);
+      }
+      if (orTable) {
+        var ot = dataTableXml(orTable);
+        if (ot) out += ot + spacerXml(80);
+      }
+      if (orSubparts.length) out += subpartsXml(orSubparts, { sz: BODY_SIZE });
+    }
+
+    return out;
+  }
+
+  function buildBody(state, ctx) {
+    var meta = state && state.meta && typeof state.meta === "object" ? state.meta : {};
+    var instructions = state && Array.isArray(state.instructions)
+      ? state.instructions.map(str).filter(function (v) { return untested(v); })
+      : [];
+    var sections = state && Array.isArray(state.sections) ? state.sections : [];
+    var body = "";
+
+    /* ---- computed max marks -------------------------------------- */
+    var autoTotal = 0;
+    var i;
+    for (i = 0; i < sections.length; i++) {
+      var sc = countOf(sections[i] && sections[i].count);
+      var sm = Math.max(0, num(sections[i] && sections[i].marks, 0));
+      autoTotal += sc * sm;
+    }
+    var maxMarks = meta.autoMarks ? String(autoTotal) : untested(meta.maxMarks);
+
+    /* ---- masthead ------------------------------------------------ */
+    var school = untested(meta.school);
+    var year = untested(meta.year);
+    var exam = untested(meta.exam);
+    if (school) {
+      body += pXml(runXml(school, { b: true, sz: 34, spacing: 8 }), {
+        align: "center", before: 0, after: 0, line: 300
+      });
+    }
+    if (year) {
+      body += pXml(runXml(year, { sz: CELL_SIZE }), {
+        align: "center", before: 20, after: 0, line: 300
+      });
+    }
+    if (exam) {
+      body += pXml(runXml(exam, { b: true, sz: 26 }), {
+        align: "center", before: 40, after: 0, line: 300
+      });
+    }
+
+    var left = [];
+    var right = [];
+    var lm = [meta.grade, meta.subject, meta.date];
+    for (i = 0; i < lm.length; i++) if (untested(lm[i])) left.push(str(lm[i]));
+    if (maxMarks) right.push("Max.Marks: " + maxMarks);
+    if (untested(meta.time)) right.push(str(meta.time));
+
+    if (left.length || right.length) body += headerBlockXml(left, right);
+    body += ruleXml(140, 0);
+
+    /* ---- general instructions ------------------------------------ */
+    if (instructions.length) {
+      body += pXml(runXml("General Instructions:-", { b: true, u: true, sz: BODY_SIZE }), {
+        before: 160, after: 100, line: LINE
+      });
+      for (i = 0; i < instructions.length; i++) {
+        body += pXml(
+          runXml(romanFor(i + 1) + ".", { sz: BODY_SIZE }) +
+          tabRun() +
+          richRuns(instructions[i], { sz: BODY_SIZE }),
+          {
+            indLeft: OPT_INDENT, indHanging: OPT_INDENT,
+            tabs: [{ pos: OPT_INDENT }],
+            before: 0, after: 40, line: LINE
+          }
+        );
+      }
+    }
+
+    /* ---- sections ------------------------------------------------ */
+    var qnum = 0;
+    for (i = 0; i < sections.length; i++) {
+      var sec = sections[i] || {};
+      var count = countOf(sec.count);
+      if (!count) continue;
+      var marks = Math.max(0, num(sec.marks, 0));
+      var questions = Array.isArray(sec.questions) ? sec.questions : [];
+
+      body += ruleXml(260, 80);
+      body += sectionHeadingXml(letterFor(i), count, marks);
+
+      for (var qi = 0; qi < count; qi++) {
+        qnum++;
+        body += questionXml(questions[qi] || {}, qnum, sec, ctx);
+      }
+    }
+
+    /* ---- end mark ------------------------------------------------ */
+    if (meta.endMark) {
+      body += pXml(runXml("*******************************", { sz: BODY_SIZE, spacing: 60 }), {
+        align: "center", before: 240, after: 0, line: LINE
+      });
+    }
+
+    return body;
+  }
+
+  /* ================================================================
+     Package parts
+     ================================================================ */
+
+  function documentXml(bodyXml) {
+    return XML_DECL +
+      '<w:document xmlns:w="' + NS_W + '" xmlns:r="' + NS_R +
+        '" xmlns:wp="' + NS_WP + '" xmlns:a="' + NS_A +
+        '" xmlns:pic="' + NS_PIC + '">' +
+      "<w:body>" + bodyXml +
+      '<w:sectPr><w:pgSz w:w="' + PAGE_W + '" w:h="' + PAGE_H + '"/>' +
+        '<w:pgMar w:top="' + MARGIN_T + '" w:right="' + MARGIN_R +
+          '" w:bottom="' + MARGIN_B + '" w:left="' + MARGIN_L +
+          '" w:header="708" w:footer="708" w:gutter="0"/>' +
+        '<w:cols w:space="708"/></w:sectPr>' +
+      "</w:body></w:document>";
+  }
+
+  function stylesXml() {
+    return XML_DECL +
+      '<w:styles xmlns:w="' + NS_W + '">' +
+        "<w:docDefaults>" +
+          "<w:rPrDefault><w:rPr>" +
+            '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" ' +
+              'w:eastAsia="Times New Roman" w:cs="Times New Roman"/>' +
+            '<w:sz w:val="' + BODY_SIZE + '"/><w:szCs w:val="' + BODY_SIZE + '"/>' +
+            '<w:lang w:val="en-US" w:eastAsia="en-US" w:bidi="ar-SA"/>' +
+          "</w:rPr></w:rPrDefault>" +
+          "<w:pPrDefault><w:pPr><w:widowControl/>" +
+            '<w:spacing w:after="0" w:line="' + LINE + '" w:lineRule="auto"/>' +
+          "</w:pPr></w:pPrDefault>" +
+        "</w:docDefaults>" +
+        '<w:style w:type="paragraph" w:default="1" w:styleId="Normal">' +
+          '<w:name w:val="Normal"/><w:qFormat/>' +
+          "<w:pPr><w:widowControl/>" +
+            '<w:spacing w:after="0" w:line="' + LINE + '" w:lineRule="auto"/>' +
+          "</w:pPr>" +
+          "<w:rPr>" +
+            '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" ' +
+              'w:eastAsia="Times New Roman" w:cs="Times New Roman"/>' +
+            '<w:sz w:val="' + BODY_SIZE + '"/><w:szCs w:val="' + BODY_SIZE + '"/>' +
+          "</w:rPr>" +
+        "</w:style>" +
+        '<w:style w:type="table" w:default="1" w:styleId="TableNormal">' +
+          '<w:name w:val="Normal Table"/><w:uiPriority w:val="99"/>' +
+          "<w:semiHidden/><w:unhideWhenUsed/>" +
+          '<w:tblPr><w:tblInd w:w="0" w:type="dxa"/>' +
+            "<w:tblCellMar>" +
+              '<w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/>' +
+              '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/>' +
+            "</w:tblCellMar></w:tblPr>" +
+        "</w:style>" +
+      "</w:styles>";
+  }
+
+  function settingsXml() {
+    return XML_DECL +
+      '<w:settings xmlns:w="' + NS_W + '">' +
+        '<w:zoom w:percent="100"/>' +
+        '<w:defaultTabStop w:val="720"/>' +
+        "<w:compat>" +
+          '<w:compatSetting w:name="compatibilityMode" ' +
+            'w:uri="http://schemas.microsoft.com/office/word" w:val="15"/>' +
+        "</w:compat>" +
+      "</w:settings>";
+  }
+
+  function documentRelsXml(images) {
+    var xml = XML_DECL +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>';
+    for (var i = 0; i < images.length; i++) {
+      xml += '<Relationship Id="' + images[i].rid +
+        '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" ' +
+        'Target="media/' + images[i].name + '"/>';
+    }
+    return xml + "</Relationships>";
+  }
+
+  function rootRelsXml() {
+    return XML_DECL +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>' +
+      '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>' +
+      "</Relationships>";
+  }
+
+  function contentTypesXml(images) {
+    var xml = XML_DECL +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Default Extension="png" ContentType="image/png"/>' +
+      '<Default Extension="jpg" ContentType="image/jpeg"/>' +
+      '<Default Extension="jpeg" ContentType="image/jpeg"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+      '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>' +
+      '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>' +
+      '<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>';
+    return xml + "</Types>";
+  }
+
+  function corePropsXml(state) {
+    var meta = state && state.meta ? state.meta : {};
+    var title = [untested(meta.exam), untested(meta.subject)].filter(Boolean).join(" - ") ||
+      "Question Paper";
+    var now = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+    return XML_DECL +
+      '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" ' +
+        'xmlns:dc="http://purl.org/dc/elements/1.1/" ' +
+        'xmlns:dcterms="http://purl.org/dc/terms/" ' +
+        'xmlns:dcmitype="http://purl.org/dc/dcmitype/" ' +
+        'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+        "<dc:title>" + escapeXml(title) + "</dc:title>" +
+        "<dc:creator>Papercraft</dc:creator>" +
+        "<cp:lastModifiedBy>Papercraft</cp:lastModifiedBy>" +
+        '<dcterms:created xsi:type="dcterms:W3CDTF">' + now + "</dcterms:created>" +
+        '<dcterms:modified xsi:type="dcterms:W3CDTF">' + now + "</dcterms:modified>" +
+      "</cp:coreProperties>";
+  }
+
+  function appPropsXml() {
+    return XML_DECL +
+      '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" ' +
+        'xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">' +
+        "<Application>Papercraft</Application>" +
+        "<AppVersion>1.0</AppVersion>" +
+      "</Properties>";
+  }
+
+  /* ================================================================
+     Store-only ZIP writer with CRC32
+     ================================================================ */
+
+  var CRC_TABLE = (function () {
+    var table = new Uint32Array(256);
+    for (var i = 0; i < 256; i++) {
+      var c = i;
+      for (var k = 0; k < 8; k++) {
+        c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      }
+      table[i] = c >>> 0;
+    }
+    return table;
+  })();
+
+  function crc32(bytes) {
+    var c = 0xFFFFFFFF;
+    for (var i = 0; i < bytes.length; i++) {
+      c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    }
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function writeU16(arr, off, v) {
+    arr[off] = v & 0xFF;
+    arr[off + 1] = (v >>> 8) & 0xFF;
+  }
+
+  function writeU32(arr, off, v) {
+    arr[off] = v & 0xFF;
+    arr[off + 1] = (v >>> 8) & 0xFF;
+    arr[off + 2] = (v >>> 16) & 0xFF;
+    arr[off + 3] = (v >>> 24) & 0xFF;
+  }
+
+  function dosDateTime(date) {
+    var year = date.getFullYear();
+    if (year < 1980) year = 1980;
+    var dosTime = ((date.getHours() & 0x1F) << 11) |
+      ((date.getMinutes() & 0x3F) << 5) |
+      (Math.floor(date.getSeconds() / 2) & 0x1F);
+    var dosDate = (((year - 1980) & 0x7F) << 9) |
+      (((date.getMonth() + 1) & 0x0F) << 5) |
+      (date.getDate() & 0x1F);
+    return { time: dosTime, date: dosDate };
+  }
+
+  function concatBytes(parts) {
+    var total = 0;
+    var i;
+    for (i = 0; i < parts.length; i++) total += parts[i].length;
+    var out = new Uint8Array(total);
+    var off = 0;
+    for (i = 0; i < parts.length; i++) {
+      out.set(parts[i], off);
+      off += parts[i].length;
+    }
+    return out;
+  }
+
+  function zipStore(files, date) {
+    var now = date || new Date();
+    var stamp = dosDateTime(now);
+    var localParts = [];
+    var centralParts = [];
+    var offset = 0;
+    var i;
+
+    for (i = 0; i < files.length; i++) {
+      var file = files[i];
+      var nameBytes = utf8Encode(file.name);
+      var data = file.data;
+      var crc = crc32(data);
+
+      var local = new Uint8Array(30 + nameBytes.length);
+      writeU32(local, 0, 0x04034B50);
+      writeU16(local, 4, 20);           // version needed
+      writeU16(local, 6, 0);            // flags
+      writeU16(local, 8, 0);            // method: store
+      writeU16(local, 10, stamp.time);
+      writeU16(local, 12, stamp.date);
+      writeU32(local, 14, crc);
+      writeU32(local, 18, data.length); // compressed size
+      writeU32(local, 22, data.length); // uncompressed size
+      writeU16(local, 26, nameBytes.length);
+      writeU16(local, 28, 0);
+      local.set(nameBytes, 30);
+
+      localParts.push(local, data);
+
+      var central = new Uint8Array(46 + nameBytes.length);
+      writeU32(central, 0, 0x02014B50);
+      writeU16(central, 4, 20);         // version made by
+      writeU16(central, 6, 20);         // version needed
+      writeU16(central, 8, 0);          // flags
+      writeU16(central, 10, 0);         // method: store
+      writeU16(central, 12, stamp.time);
+      writeU16(central, 14, stamp.date);
+      writeU32(central, 16, crc);
+      writeU32(central, 20, data.length);
+      writeU32(central, 24, data.length);
+      writeU16(central, 28, nameBytes.length);
+      writeU16(central, 30, 0);         // extra
+      writeU16(central, 32, 0);         // comment
+      writeU16(central, 34, 0);         // disk start
+      writeU16(central, 36, 0);         // internal attrs
+      writeU32(central, 38, 0);         // external attrs
+      writeU32(central, 42, offset);    // local header offset
+      central.set(nameBytes, 46);
+
+      centralParts.push(central);
+      offset += local.length + data.length;
+    }
+
+    var centralStart = offset;
+    var centralBlob = concatBytes(centralParts);
+    var eocd = new Uint8Array(22);
+    writeU32(eocd, 0, 0x06054B50);
+    writeU16(eocd, 4, 0);
+    writeU16(eocd, 6, 0);
+    writeU16(eocd, 8, files.length);
+    writeU16(eocd, 10, files.length);
+    writeU32(eocd, 12, centralBlob.length);
+    writeU32(eocd, 16, centralStart);
+    writeU16(eocd, 20, 0);
+
+    return concatBytes(localParts.concat([centralBlob, eocd]));
+  }
+
+  function textFile(name, text) {
+    return { name: name, data: utf8Encode(text) };
+  }
+
+  /* ================================================================
+     Public entry points
+     ================================================================ */
+
+  function buildDocx(state) {
+    var ctx = { images: [], nextRelId: 3, nextDocPrId: 1 };
+    var body = buildBody(state, ctx);
+
+    var files = [
+      textFile("[Content_Types].xml", contentTypesXml(ctx.images)),
+      textFile("_rels/.rels", rootRelsXml()),
+      textFile("docProps/core.xml", corePropsXml(state)),
+      textFile("docProps/app.xml", appPropsXml()),
+      textFile("word/document.xml", documentXml(body)),
+      textFile("word/styles.xml", stylesXml()),
+      textFile("word/settings.xml", settingsXml()),
+      textFile("word/_rels/document.xml.rels", documentRelsXml(ctx.images))
+    ];
+
+    for (var i = 0; i < ctx.images.length; i++) {
+      files.push({
+        name: "word/media/" + ctx.images[i].name,
+        data: ctx.images[i].bytes
+      });
+    }
+
+    return zipStore(files);
+  }
+
+  function buildDocxBlob(state) {
+    var bytes = buildDocx(state);
+    if (typeof Blob !== "function") {
+      throw new Error("Blob is not available in this environment.");
+    }
+    return new Blob([bytes], { type: DOCX_MIME });
+  }
+
+  var api = { buildDocx: buildDocx, buildDocxBlob: buildDocxBlob };
+
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = api;
+  }
+  if (typeof window !== "undefined") {
+    window.PapercraftDocx = api;
+  } else if (typeof self !== "undefined" && self && typeof self.document === "undefined") {
+    /* Worker-ish browser contexts get the same global for convenience. */
+    try { self.PapercraftDocx = api; } catch (e) { /* ignore */ }
+  }
+
+})(typeof globalThis !== "undefined" ? globalThis : this);
+
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     constants & helpers
+     ============================================================ */
+  const STORAGE_KEY = "papercraft.v1";
+  const ROMAN = ["i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii"];
+  const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const TYPE_LABEL = { mcq:"MCQ", short:"Short answer", sub:"Long answer", case:"Case study" };
+  const META_FIELDS = [
+    {k:"school",  label:"School name",       ph:"Frontline Millennium School", span2:true},
+    {k:"year",    label:"Academic year",     ph:"Academic Year (2026 – 2027)"},
+    {k:"exam",    label:"Exam / test name",  ph:"Half Portion – 1", span2:true},
+    {k:"grade",   label:"Class / grade",     ph:"Grade: 12 B"},
+    {k:"subject", label:"Subject",           ph:"Subject: APP - Mathematics"},
+    {k:"date",    label:"Date",              ph:"Date: 26/10/26"},
+    {k:"time",    label:"Time allowed",      ph:"Time: 3 hours"}
+  ];
+
+  const $  = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+  function esc(v){
+    return String(v == null ? "" : v).replace(/[&<>"']/g, c => (
+      {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]
+    ));
+  }
+  function uid(){
+    return Math.random().toString(36).slice(2, 9);
+  }
+
+  /* rich-text: escape, then turn ^2 / ^{...} into superscript and _1 into subscript */
+  function fmt(raw){
+    let s = esc(raw);
+    s = s.replace(/\^\{([^}]*)\}/g, "<sup>$1</sup>")
+         .replace(/\^(-?\d+|[A-Za-z])/g, "<sup>$1</sup>")
+         .replace(/_\{([^}]*)\}/g, "<sub>$1</sub>")
+         .replace(/_([A-Za-z0-9])/g, "<sub>$1</sub>");
+    return s.replace(/\r?\n/g, "<br>");
+  }
+
+  /* ============================================================
+     model
+     ============================================================ */
+  function defaultTable(rows, cols){
+    rows = rows || 2;
+    cols = cols || 4;
+    return {
+      header: true,
+      rows: Array.from({length: rows}, () => Array.from({length: cols}, () => ""))
+    };
+  }
+
+  function newQuestion(type){
+    const q = {
+      text: "",
+      image: null,
+      imageWidth: 10,
+      options: ["", "", "", ""],
+      subparts: [],
+      table: null,
+      useOr: false,
+      orText: "",
+      orOptions: ["", "", "", ""],
+      orImage: null,
+      orImageWidth: 10,
+      orSubparts: [],
+      orTable: null
+    };
+    if(type === "case") q.subparts = ["", "", ""];
+    return q;
+  }
+
+  function mkSection(opts){
+    opts = opts || {};
+    const count = opts.count == null ? 1 : opts.count;
+    const type = opts.type || "short";
+    return {
+      id: uid(),
+      type: type,
+      marks: opts.marks == null ? 2 : opts.marks,
+      count: count,
+      optionsPerRow: 2,
+      questions: Array.from({length: count}, () => newQuestion(type))
+    };
+  }
+
+  function defaultState(){
+    return {
+      meta: {
+        school: "Frontline Millennium School",
+        year: "Academic Year (2026 – 2027)",
+        exam: "Half Portion – 1",
+        grade: "Grade: 12 B",
+        subject: "Subject: APP - Mathematics",
+        date: "Date: 26/10/26",
+        time: "Time: 3 hours",
+        maxMarks: "80",
+        autoMarks: true,
+        endMark: true
+      },
+      instructions: [
+        "All questions are compulsory.",
+        "Write answers neatly and legibly.",
+        "Internal choice has been provided where indicated by OR."
+      ],
+      sections: [
+        mkSection({type:"mcq",   marks:1, count:20}),
+        mkSection({type:"short", marks:2, count:5}),
+        mkSection({type:"sub",   marks:3, count:6}),
+        mkSection({type:"sub",   marks:5, count:4}),
+        mkSection({type:"case",  marks:4, count:3})
+      ]
+    };
+  }
+
+  function normalizeTable(raw){
+    if(raw && Array.isArray(raw.rows) && raw.rows.length && Array.isArray(raw.rows[0]) && raw.rows[0].length){
+      return {
+        header: !!raw.header,
+        rows: raw.rows.map(r => (Array.isArray(r) ? r : []).map(c => String(c == null ? "" : c)))
+      };
+    }
+    return null;
+  }
+
+  function normalize(st){
+    if(!st || typeof st !== "object" || !Array.isArray(st.sections)) return null;
+    const base = defaultState();
+    const meta = Object.assign({}, base.meta, st.meta || {});
+    const instructions = Array.isArray(st.instructions)
+      ? st.instructions.map(v => String(v == null ? "" : v))
+      : base.instructions.slice();
+
+    const sections = st.sections.map(raw => {
+      const type = TYPE_LABEL[raw.type] ? raw.type : "short";
+      const marks = Math.max(1, Math.min(100, parseInt(raw.marks, 10) || 1));
+      const count = Math.max(1, Math.min(60, parseInt(raw.count, 10) || 1));
+      const sec = {
+        id: raw.id || uid(),
+        type: type,
+        marks: marks,
+        count: count,
+        optionsPerRow: raw.optionsPerRow === 4 ? 4 : 2,
+        questions: []
+      };
+      const qs = Array.isArray(raw.questions) ? raw.questions : [];
+      for(let i = 0; i < count; i++){
+        const q = qs[i] || {};
+        const table = normalizeTable(q.table);
+        sec.questions.push({
+          text: typeof q.text === "string" ? q.text : "",
+          image: typeof q.image === "string" ? q.image : null,
+          imageWidth: +q.imageWidth || 10,
+          options: Array.isArray(q.options)
+            ? [0,1,2,3].map(i => String(q.options[i] == null ? "" : q.options[i]))
+            : ["", "", "", ""],
+          subparts: Array.isArray(q.subparts) ? q.subparts.map(v => String(v == null ? "" : v)) : [],
+          table: table,
+          useOr: !!q.useOr,
+          orText: typeof q.orText === "string" ? q.orText : "",
+          orOptions: Array.isArray(q.orOptions)
+            ? [0,1,2,3].map(i => String(q.orOptions[i] == null ? "" : q.orOptions[i]))
+            : ["", "", "", ""],
+          orImage: typeof q.orImage === "string" ? q.orImage : null,
+          orImageWidth: +q.orImageWidth || 10,
+          orSubparts: Array.isArray(q.orSubparts) ? q.orSubparts.map(v => String(v == null ? "" : v)) : [],
+          orTable: normalizeTable(q.orTable)
+        });
+      }
+      return sec;
+    });
+
+    return {meta: meta, instructions: instructions, sections: sections};
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return null;
+      return normalize(JSON.parse(raw));
+    }catch(e){ return null; }
+  }
+
+  let state = loadState() || defaultState();
+
+  /* ============================================================
+     tiny render helpers
+     ============================================================ */
+  function paperTotal(){
+    return state.sections.reduce((a, s) => a + s.count * s.marks, 0);
+  }
+  function qStart(si){
+    let n = 0;
+    for(let i = 0; i < si; i++) n += state.sections[i].count;
+    return n;
+  }
+  function sectionOf(el){
+    const secEl = el.closest("[data-sid]");
+    return secEl ? state.sections.find(s => s.id === secEl.dataset.sid) : null;
+  }
+  function questionOf(el){
+    const qEl = el.closest(".qcard");
+    const sec = sectionOf(el);
+    if(!qEl || !sec) return null;
+    return sec.questions[+qEl.dataset.q] || null;
+  }
+  function hasAnyText(arr){
+    return (arr || []).some(t => t && String(t).trim());
+  }
+  function tableHasText(tbl){
+    return !!tbl && tbl.rows.some(r => r.some(c => c && String(c).trim()));
+  }
+  function tableFor(q, el){
+    const wrap = el.closest("[data-tbltarget]");
+    return (wrap && wrap.dataset.tbltarget === "or") ? q.orTable : q.table;
+  }
+  function rule(top, bottom){
+    top = top == null ? 8 : top;
+    bottom = bottom == null ? 4 : bottom;
+    return '<p style="border-bottom:1pt solid #000;margin:' + top + 'pt 0 ' + bottom +
+           'pt 0;font-size:1pt;line-height:1pt">&nbsp;</p>';
+  }
+
+  /* ============================================================
+     paper renderer (shared by preview + Word export)
+     ============================================================ */
+  function makeImgResolver(forExport, bag){
+    let n = 0;
+    return function(src){
+      if(!src) return "";
+      if(!forExport) return src;
+      const m = /^data:image\/([a-zA-Z0-9.+-]+);base64,(.*)$/.exec(src);
+      if(!m) return src;
+      n++;
+      const kind = m[1].toLowerCase();
+      const ext = kind === "jpeg" ? "jpg" : (kind === "svg+xml" ? "png" : kind);
+      const mime = kind === "jpeg" ? "image/jpeg" : "image/" + kind;
+      const name = "image" + String(n).padStart(3, "0") + "." + ext;
+      bag.push({name: name, mime: mime, data: m[2]});
+      return name;
+    };
+  }
+
+  function optsHTML(opts, perRow){
+    perRow = perRow === 4 ? 4 : 2;
+    const w = 100 / perRow;
+    let h = '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:2pt 0 0">';
+    for(let r = 0; r < 4; r += perRow){
+      h += "<tr>";
+      for(let c = 0; c < perRow; c++){
+        const i = r + c;
+        if(i > 3) break;
+        h += '<td width="' + w + '%" valign="top" style="font-size:11pt;line-height:1.42;padding:1pt 6pt 1pt ' +
+             (c === 0 ? "12pt" : "0") + '">' + "abcd"[i] + ") " + (fmt(opts[i] || "") || "&nbsp;") + "</td>";
+      }
+      h += "</tr>";
+    }
+    h += "</table>";
+    return h;
+  }
+
+  function dataTableHTML(tbl){
+    const cols = tbl.rows[0] ? tbl.rows[0].length : 0;
+    if(!cols) return "";
+    let h = '<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;' +
+            'margin:6pt 0 3pt;border:0.75pt solid #000">';
+    tbl.rows.forEach((row, ri) => {
+      h += "<tr>";
+      for(let ci = 0; ci < cols; ci++){
+        const isHead = tbl.header && ri === 0;
+        h += '<td style="border:0.75pt solid #000;padding:3pt 6pt;font-size:10.5pt;' +
+             'text-align:' + (ci === 0 ? "left" : "center") + ";" +
+             (isHead ? "font-weight:bold;" : "") + '">' +
+             (fmt(row[ci] || "") || "&nbsp;") + "</td>";
+      }
+      h += "</tr>";
+    });
+    h += "</table>";
+    return h;
+  }
+
+  function qBodyHTML(q, sec, img, isOr, forExport){
+    const text  = isOr ? q.orText  : q.text;
+    const image = isOr ? q.orImage : q.image;
+    const width = isOr ? q.orImageWidth : q.imageWidth;
+    const subs  = isOr ? q.orSubparts : q.subparts;
+    const opts  = isOr ? (q.orOptions || ["", "", "", ""]) : q.options;
+    const table = isOr ? q.orTable : q.table;
+    let h = "";
+
+    if(text && text.trim()){
+      h += "<div>" + fmt(text) + "</div>";
+    }else if(!forExport){
+      h += '<span class="qblank">' + (isOr ? "Alternative question text…" : "Question text…") + "</span>";
+    }
+
+    if(image){
+      h += '<div style="margin:5pt 0 3pt"><img src="' + img(image) +
+           '" style="width:' + (width || 10) + 'cm;height:auto"></div>';
+    }
+
+    if(sec.type === "mcq") h += optsHTML(opts, sec.optionsPerRow);
+    if(table) h += dataTableHTML(table);
+
+    if(subs.length){
+      h += '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:2pt">';
+      subs.forEach((t, i) => {
+        h += '<tr><td width="30" valign="top" style="font-size:11pt;line-height:1.45;padding:0 0 1pt 14pt">(' +
+             (ROMAN[i] || (i + 1)) + ')</td>' +
+             '<td valign="top" style="font-size:11pt;line-height:1.45;padding:0 0 1pt">' +
+             (fmt(t) || "&nbsp;") + "</td></tr>";
+      });
+      h += "</table>";
+    }
+
+    return h || "&nbsp;";
+  }
+
+  function questionHTML(q, num, sec, img, forExport){
+    let h = "<tr>" +
+      '<td width="34" valign="top" style="font-size:11pt;line-height:1.5;padding:6pt 0 0">' + num + ".</td>" +
+      '<td valign="top" style="font-size:11pt;line-height:1.5;padding:6pt 0 0">' +
+      qBodyHTML(q, sec, img, false, forExport) + "</td></tr>";
+
+    const orOn = q.useOr && (
+      (q.orText && q.orText.trim()) ||
+      q.orImage ||
+      (sec.type === "mcq" && q.orOptions && q.orOptions.some(o => o && o.trim())) ||
+      q.orTable ||
+      (q.orSubparts && q.orSubparts.some(t => t && t.trim()))
+    );
+
+    if(orOn){
+      h += '<tr><td width="34"></td><td align="center" style="font-size:11pt;font-weight:bold;padding:5pt 0">OR</td></tr>';
+      h += '<tr><td width="34"></td><td valign="top" style="font-size:11pt;line-height:1.5">' +
+           qBodyHTML(q, sec, img, true, forExport) + "</td></tr>";
+    }
+    return h;
+  }
+
+  function buildPaper(forExport, imgBag){
+    const m = state.meta;
+    const img = makeImgResolver(forExport, imgBag || []);
+    const autoTotal = paperTotal();
+    const mm = m.autoMarks ? String(autoTotal) : String(m.maxMarks || "").trim();
+
+    let h = '<div style="text-align:center;line-height:1.3">';
+    if(m.school) h += '<div style="font-size:17pt;font-weight:bold;letter-spacing:.4pt">' + esc(m.school) + "</div>";
+    if(m.year)   h += '<div style="font-size:10.5pt;margin-top:1pt">' + esc(m.year) + "</div>";
+    if(m.exam)   h += '<div style="font-size:13pt;font-weight:bold;margin-top:3pt">' + esc(m.exam) + "</div>";
+    h += "</div>";
+
+    const left = [m.grade, m.subject, m.date].filter(v => v && String(v).trim());
+    const right = [mm ? "Max.Marks: " + mm : "", m.time].filter(v => v && String(v).trim());
+    if(left.length || right.length){
+      h += '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:7pt"><tr>';
+      h += '<td valign="top" align="left" style="font-size:11pt;line-height:1.4">' +
+           (left.map(esc).join("<br>") || "&nbsp;") + "</td>";
+      h += '<td valign="top" align="right" style="font-size:11pt;line-height:1.4">' +
+           (right.map(esc).join("<br>") || "&nbsp;") + "</td>";
+      h += "</tr></table>";
+    }
+
+    h += rule(7, 0);
+
+    const instr = state.instructions.map(v => (v || "").trim()).filter(Boolean);
+    if(instr.length){
+      h += '<div style="font-size:11pt;font-weight:bold;margin:8pt 0 5pt;text-decoration:underline">General Instructions:-</div>';
+      h += '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">';
+      instr.forEach((t, i) => {
+        h += '<tr><td width="26" valign="top" style="font-size:11pt;line-height:1.45;padding:0 0 2pt">' +
+             (ROMAN[i] || (i + 1)) + '.</td><td valign="top" style="font-size:11pt;line-height:1.45;padding:0 0 2pt">' +
+             fmt(t) + "</td></tr>";
+      });
+      h += "</table>";
+    }
+
+    let qnum = 0;
+    state.sections.forEach((sec, si) => {
+      if(!sec.count || !sec.questions.length) return;
+      h += rule(13, 4);
+      h += '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse"><tr>' +
+        '<td width="20%"></td>' +
+        '<td width="60%" align="center" style="font-size:12pt;font-weight:bold;text-decoration:underline;' +
+          'letter-spacing:2.5pt;line-height:1.25">SECTION – ' + (LETTERS[si] || (si + 1)) + "</td>" +
+        '<td width="20%" align="right" style="font-size:10.5pt;font-weight:bold;line-height:1.25">' +
+          sec.count + " × " + sec.marks + " = " + (sec.count * sec.marks) + "</td>" +
+        "</tr></table>";
+
+      h += '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">';
+      sec.questions.forEach(q => {
+        qnum++;
+        h += questionHTML(q, qnum, sec, img, forExport);
+      });
+      h += "</table>";
+    });
+
+    if(m.endMark){
+      h += '<div style="text-align:center;margin-top:20pt;font-size:11pt;letter-spacing:3pt">' +
+           "*******************************</div>";
+    }
+    return h;
+  }
+
+  /* ============================================================
+     preview
+     ============================================================ */
+  const paperEl = $("#paper");
+  const holderEl = $("#page-holder");
+  let previewQueued = false;
+
+  function updatePreview(){
+    if(previewQueued) return;
+    previewQueued = true;
+    requestAnimationFrame(() => {
+      previewQueued = false;
+      paperEl.innerHTML = buildPaper(false);
+      fitPreview();
+    });
+  }
+
+  function fitPreview(){
+    const scroller = $("#preview-scroll");
+    if(!scroller) return;
+    const avail = Math.max(240, scroller.clientWidth - 34);
+    const w = paperEl.offsetWidth || 794;
+    const h = paperEl.offsetHeight || 1123;
+    const scale = Math.min(1, avail / w);
+    holderEl.style.width = Math.round(w * scale) + "px";
+    holderEl.style.height = Math.round(h * scale) + "px";
+    paperEl.style.transform = "scale(" + scale + ")";
+  }
+
+  /* ============================================================
+     editor renderers
+     ============================================================ */
+  function renderMeta(){
+    const m = state.meta;
+    const marksValue = m.autoMarks ? paperTotal() : m.maxMarks;
+    let h = '<div class="grid2">';
+    META_FIELDS.forEach(f => {
+      h += '<label class="field' + (f.span2 ? " span2" : "") + '">' +
+        "<span>" + f.label + "</span>" +
+        '<input type="text" data-meta="' + f.k + '" value="' + esc(m[f.k] || "") +
+        '" placeholder="' + esc(f.ph) + '">' +
+        "</label>";
+    });
+    h += '<label class="field"><span>Max marks</span><div class="inline-field">' +
+      '<input type="number" min="0" data-meta="maxMarks" value="' + esc(marksValue) + '"' +
+      (m.autoMarks ? " disabled" : "") + ">" +
+      '<label class="check"><input type="checkbox" data-meta="autoMarks"' +
+      (m.autoMarks ? " checked" : "") + "> Auto</label>" +
+      "</div></label>";
+    h += "</div>";
+    $("#meta-fields").innerHTML = h;
+
+    $("#meta-foot").innerHTML =
+      '<label class="check"><input type="checkbox" data-meta="endMark"' + (m.endMark ? " checked" : "") +
+      "> End the paper with ****************</label>" +
+      '<span class="mini">Type <code>x^2</code> for x² and <code>x_1</code> for x₁. Sections with <b>Auto</b> add up their marks.</span>';
+  }
+
+  function renderInstr(){
+    const list = $("#instr-list");
+    list.innerHTML = state.instructions.map((t, i) =>
+      '<div class="insrow">' +
+        '<span class="lbl">' + (ROMAN[i] || (i + 1)) + ".</span>" +
+        '<textarea rows="1" data-instr="' + i + '" placeholder="Instruction text…">' + esc(t) + "</textarea>" +
+        '<button class="icon-btn danger" data-act="instr-del" data-i="' + i + '" title="Remove instruction">✕</button>' +
+      "</div>"
+    ).join("");
+    autoGrowAll(list);
+  }
+
+  function renderSections(){
+    const wrap = $("#sections");
+    wrap.innerHTML = state.sections.map((s, si) => sectionHTML(s, si)).join("");
+    autoGrowAll(wrap);
+    updateTotals();
+  }
+
+  function updateTotals(){
+    const q = state.sections.reduce((a, s) => a + s.count, 0);
+    const mk = paperTotal();
+    const el = $("#totals");
+    if(el) el.textContent = q + " question" + (q === 1 ? "" : "s") + " · " + mk + " mark" + (mk === 1 ? "" : "s");
+  }
+
+  function sectionHTML(s, si){
+    const total = s.count * s.marks;
+    const isMcq = s.type === "mcq";
+    const typeOpts = Object.keys(TYPE_LABEL).map(id =>
+      '<option value="' + id + '"' + (s.type === id ? " selected" : "") + ">" + TYPE_LABEL[id] + "</option>"
+    ).join("");
+
+    let h = '<div class="card section-card" data-sid="' + s.id + '">';
+    h += '<div class="sec-head">' +
+      '<div class="sec-titles">' +
+        '<div class="sec-kicker">SECTION ' + (LETTERS[si] || (si + 1)) + "</div>" +
+        '<div class="sec-sum">' + s.count + " question" + (s.count === 1 ? "" : "s") + " · " +
+          s.marks + " mark" + (s.marks === 1 ? "" : "s") + " each · <b>" +
+          s.count + " × " + s.marks + " = " + total + "</b></div>" +
+      "</div>" +
+      '<div class="sec-actions">' +
+        '<button class="icon-btn" data-act="sec-up" title="Move section up">↑</button>' +
+        '<button class="icon-btn" data-act="sec-down" title="Move section down">↓</button>' +
+        '<button class="icon-btn danger" data-act="sec-del" title="Delete section">✕</button>' +
+      "</div>" +
+    "</div>";
+
+    h += '<div class="sec-body">' +
+      '<div class="sec-config' + (isMcq ? "" : " cols3") + '">' +
+        '<label class="field"><span>Question type</span><select data-sattr="type">' + typeOpts + "</select></label>" +
+        '<label class="field"><span>Marks each</span><input type="number" min="1" max="100" data-sattr="marks" value="' + s.marks + '"></label>' +
+        '<label class="field"><span>Questions</span><input type="number" min="1" max="60" data-sattr="count" value="' + s.count + '"></label>' +
+        (isMcq
+          ? '<label class="field"><span>Options per row</span><select data-sattr="optionsPerRow">' +
+              '<option value="2"' + (s.optionsPerRow !== 4 ? " selected" : "") + ">2</option>" +
+              '<option value="4"' + (s.optionsPerRow === 4 ? " selected" : "") + ">4</option>" +
+            "</select></label>"
+          : "") +
+      "</div>";
+
+    h += '<div class="qlist">' + s.questions.map((q, qi) =>
+      qCardHTML(s, q, qi, qStart(si) + qi + 1)).join("") + "</div>";
+    h += '<button class="btn small addq" data-act="q-add">+ Add another question to this section</button>';
+
+    h += "</div></div>";
+    return h;
+  }
+
+  function optionsHTML(opts, isOr){
+    const field = isOr ? "oropt" : "opt";
+    return '<div class="opts">' + ["a","b","c","d"].map((l, i) =>
+      '<label class="opt"><span>' + l + ")</span>" +
+      '<input data-qfield="' + field + '" data-oi="' + i + '" value="' + esc(opts[i] || "") +
+      '" placeholder="Option ' + l + '"></label>'
+    ).join("") + "</div>";
+  }
+
+  function subsEditorHTML(list, isOr){
+    const orAttr = isOr ? ' data-or="1"' : "";
+    const rows = list.map((t, i) =>
+      '<div class="subrow">' +
+        '<span class="lbl">(' + (ROMAN[i] || (i + 1)) + ")</span>" +
+        '<textarea rows="1" data-qfield="sub" data-si="' + i + '"' + orAttr +
+          ' placeholder="Subdivision (' + (ROMAN[i] || (i + 1)) + ') — multi-line allowed">' + esc(t) + "</textarea>" +
+        '<button class="icon-btn danger" data-act="sub-del" data-si="' + i + '"' + orAttr +
+          ' title="Remove subdivision">✕</button>' +
+      "</div>"
+    ).join("");
+    return '<div class="subs">' + rows +
+      '<button class="btn small" data-act="sub-add"' + orAttr + ">+ Add subdivision</button></div>";
+  }
+
+  function tableEditorHTML(tbl, target){
+    const cols = tbl.rows[0] ? tbl.rows[0].length : 0;
+    let rows = "";
+    tbl.rows.forEach((row, ri) => {
+      rows += "<tr>";
+      for(let ci = 0; ci < cols; ci++){
+        rows += '<td><input data-qcell="' + ri + "-" + ci + '" value="' + esc(row[ci] || "") + '"></td>';
+      }
+      rows += "</tr>";
+    });
+    return '<div class="tbleditor" data-tbltarget="' + (target === "or" ? "or" : "main") + '">' +
+      '<div class="tb-tools">' +
+        '<label class="check"><input type="checkbox" data-tbl="header"' + (tbl.header ? " checked" : "") +
+          "> Header row</label>" +
+        '<button class="tool" data-act="tbl-add-row">+ Row</button>' +
+        '<button class="tool" data-act="tbl-add-col">+ Col</button>' +
+        '<button class="tool" data-act="tbl-del-row">− Row</button>' +
+        '<button class="tool" data-act="tbl-del-col">− Col</button>' +
+        '<button class="tool remove" data-act="tbl-del" style="margin-left:auto">✕ Remove table</button>' +
+      "</div>" +
+      '<table class="tbl-edit">' + rows + "</table>" +
+    "</div>";
+  }
+
+  function imageRow(q, isOr){
+    const src = isOr ? q.orImage : q.image;
+    const w = isOr ? q.orImageWidth : q.imageWidth;
+    return '<div class="imgrow">' +
+      '<img src="' + src + '" alt="">' +
+      '<div class="imgmeta"><div class="range">Width ' +
+        '<input type="range" min="3" max="17" step="0.5" value="' + w + '" data-qfield="' +
+        (isOr ? "orImageWidth" : "imageWidth") + '">' +
+        "<b>" + w + " cm</b></div></div>" +
+      '<button class="btn small danger" data-act="img-del" data-or="' + (isOr ? 1 : 0) + '">✕ Remove image</button>' +
+    "</div>";
+  }
+
+  function orBoxHTML(q, sec){
+    return '<div class="orbox">' +
+      '<div class="orhead"><span class="orlabel">OR alternative</span>' +
+        '<button class="icon-btn danger" data-act="or-del" title="Remove OR alternative">✕</button></div>' +
+      '<textarea data-qfield="orText" rows="2" placeholder="Alternative question (shown after OR)…">' +
+        esc(q.orText) + "</textarea>" +
+      (sec.type === "mcq" ? optionsHTML(q.orOptions || ["", "", "", ""], true) : "") +
+      (q.orImage ? imageRow(q, true) : "") +
+      (q.orTable ? tableEditorHTML(q.orTable, "or") : "") +
+      '<div class="ortools">' +
+        '<button class="tool tool-img' + (q.orImage ? " remove" : "") + '" data-act="q-or-img" title="' +
+          (q.orImage ? "Remove the image from the OR alternative" : "Attach an image to the OR alternative") + '">' +
+          (q.orImage ? "✕ Remove image" : "+ Add image") + "</button>" +
+        '<button class="tool tool-subs' + (q.orSubparts.length ? " remove" : "") + '" data-act="or-subs" title="' +
+          (q.orSubparts.length ? "Remove all subdivisions" : "Add subdivisions") + '">' +
+          (q.orSubparts.length ? "✕ Remove subdivisions" : "+ Add subdivisions") + "</button>" +
+        '<button class="tool tool-table' + (q.orTable ? " remove" : "") + '" data-act="or-table" title="' +
+          (q.orTable ? "Remove the table from the OR alternative" : "Add a data table to the OR alternative") + '">' +
+          (q.orTable ? "✕ Remove table" : "+ Add table") + "</button>" +
+      "</div>" +
+      (q.orSubparts.length ? subsEditorHTML(q.orSubparts, true) : "") +
+    "</div>";
+  }
+
+  function qCardHTML(sec, q, qi, num){
+    const isMcq = sec.type === "mcq";
+    const hasImage = !!q.image;
+    const hasOr = !!q.useOr;
+    const hasSubs = q.subparts.length > 0;
+    const hasTable = !!q.table;
+    return '<div class="qcard" data-q="' + qi + '">' +
+      '<div class="qhead">' +
+        '<span class="qnum">' + num + "</span>" +
+        '<span class="qtype">' + (TYPE_LABEL[sec.type] || "") + "</span>" +
+        '<div class="qtools">' +
+          '<button class="tool tool-img' + (hasImage ? " remove" : "") + '" data-act="q-img" title="' +
+            (hasImage ? "Remove the image from this question" : "Attach an image to this question") + '">' +
+            (hasImage ? "✕ Remove image" : "+ Add image") + "</button>" +
+          '<button class="tool tool-or' + (hasOr ? " remove" : "") + '" data-act="q-or" title="' +
+            (hasOr ? "Remove the OR alternative" : "Add an OR alternative question") + '">' +
+            (hasOr ? "✕ Remove OR option" : "+ OR option") + "</button>" +
+          '<button class="tool tool-subs' + (hasSubs ? " remove" : "") + '" data-act="q-subs" title="' +
+            (hasSubs ? "Remove all subdivisions" : "Add subdivisions") + '">' +
+            (hasSubs ? "✕ Remove subdivisions" : "+ Add subdivisions") + "</button>" +
+          '<button class="tool tool-table' + (hasTable ? " remove" : "") + '" data-act="q-table" title="' +
+            (hasTable ? "Remove the data table" : "Add a data table") + '">' +
+            (hasTable ? "✕ Remove table" : "+ Add table") + "</button>" +
+          '<button class="icon-btn danger qdel" data-act="q-del" title="Delete this question">✕</button>' +
+        "</div>" +
+      "</div>" +
+      '<textarea data-qfield="text" rows="2" placeholder="Type the question here…">' + esc(q.text) + "</textarea>" +
+      (q.image ? imageRow(q, false) : "") +
+      (isMcq ? optionsHTML(q.options) : "") +
+      (q.table ? tableEditorHTML(q.table, "main") : "") +
+      (q.subparts.length ? subsEditorHTML(q.subparts, false) : "") +
+      (q.useOr ? orBoxHTML(q, sec) : "") +
+      '<input class="filehide" type="file" accept="image/*" data-imginput="main">' +
+      '<input class="filehide" type="file" accept="image/*" data-imginput="or">' +
+    "</div>";
+  }
+
+  function refreshQCard(sec, qi){
+    const secEl = document.querySelector('.section-card[data-sid="' + sec.id + '"]');
+    if(!secEl) return;
+    const card = secEl.querySelector('.qcard[data-q="' + qi + '"]');
+    if(!card) return;
+    const si = state.sections.indexOf(sec);
+    card.outerHTML = qCardHTML(sec, sec.questions[qi], qi, qStart(si) + qi + 1);
+    autoGrowAll(secEl);
+  }
+
+  function renderAll(){
+    renderMeta();
+    renderInstr();
+    renderSections();
+  }
+
+  /* ============================================================
+     textarea auto-grow
+     ============================================================ */
+  function autoGrow(el){
+    if(!el || el.tagName !== "TEXTAREA") return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight + 2, 340) + "px";
+  }
+  function autoGrowAll(root){
+    $$("textarea", root).forEach(autoGrow);
+  }
+
+  /* ============================================================
+     persistence
+     ============================================================ */
+  let saveTimer = null;
+  let idleTimer = null;
+  const saveEl = $("#savestate");
+
+  function scheduleSave(){
+    if(saveEl){
+      saveEl.textContent = "Saving…";
+      saveEl.classList.remove("ok", "warn");
+    }
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if(saveEl){
+          saveEl.textContent = "Saved";
+          saveEl.classList.add("ok");
+        }
+      }catch(e){
+        if(saveEl){
+          saveEl.textContent = "Not saved — browser storage is full";
+          saveEl.classList.add("warn");
+        }
+      }
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if(saveEl){
+          saveEl.textContent = "Auto-saves in this browser";
+          saveEl.classList.remove("ok", "warn");
+        }
+      }, 1800);
+    }, 380);
+  }
+
+  let toastTimer = null;
+  function toast(msg){
+    const el = $("#toast");
+    if(!el) return;
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2300);
+  }
+
+  /* ============================================================
+     images
+     ============================================================ */
+  function loadImg(src){
+    return new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = reject;
+      im.src = src;
+    });
+  }
+
+  async function readImageFile(file){
+    if(!file) return null;
+    if(!/^image\//.test(file.type)){
+      alert("Please choose an image file.");
+      return null;
+    }
+    const dataUrl = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+    try{
+      const im = await loadImg(dataUrl);
+      const maxW = 1400;
+      const nw = im.naturalWidth || im.width;
+      const nh = im.naturalHeight || im.height;
+      const scale = Math.min(1, maxW / Math.max(1, nw));
+      const w = Math.max(1, Math.round(nw * scale));
+      const hh = Math.max(1, Math.round(nh * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = hh;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, hh);
+      ctx.drawImage(im, 0, 0, w, hh);
+      return canvas.toDataURL("image/jpeg", 0.9);
+    }catch(e){
+      return dataUrl;
+    }
+  }
+
+  /* ============================================================
+     click handlers
+     ============================================================ */
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-act]");
+    if(!t) return;
+    const act = t.dataset.act;
+    const sec = sectionOf(t);
+    const si = sec ? state.sections.indexOf(sec) : -1;
+    const cardEl = t.closest(".qcard");
+    const qi = cardEl ? +cardEl.dataset.q : -1;
+    const q = (sec && qi >= 0) ? sec.questions[qi] : null;
+
+    switch(act){
+      case "sec-up":
+      case "sec-down": {
+        if(!sec) return;
+        const target = act === "sec-up" ? si - 1 : si + 1;
+        if(target < 0 || target >= state.sections.length) return;
+        state.sections.splice(si, 1);
+        state.sections.splice(target, 0, sec);
+        renderSections();
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "sec-del": {
+        if(!sec) return;
+        const label = "SECTION " + (LETTERS[si] || (si + 1));
+        if(!confirm("Delete " + label + " and its " + sec.count + " question" + (sec.count === 1 ? "" : "s") + "?")) return;
+        state.sections.splice(si, 1);
+        renderSections();
+        renderMeta();
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "q-add": {
+        if(!sec || sec.count >= 60) return;
+        sec.count++;
+        sec.questions.push(newQuestion(sec.type));
+        renderSections();
+        renderMeta();
+        updatePreview();
+        scheduleSave();
+        const secEl = document.querySelector('.section-card[data-sid="' + sec.id + '"]');
+        const cards = secEl ? $$(".qcard", secEl) : [];
+        const last = cards[cards.length - 1];
+        if(last){
+          last.scrollIntoView({behavior:"smooth", block:"center"});
+          const ta = $("textarea", last);
+          if(ta) ta.focus();
+        }
+        break;
+      }
+      case "q-del": {
+        if(!sec || !q) return;
+        const hasContent = (q.text && q.text.trim()) || q.image || (q.orText && q.orText.trim()) ||
+          q.orImage || q.table || q.subparts.some(v => v && v.trim()) ||
+          q.orSubparts.some(v => v && v.trim());
+        if(hasContent && !confirm("Remove this question?")) return;
+        sec.questions.splice(qi, 1);
+        sec.count = sec.questions.length;
+        if(sec.count < 1){
+          sec.count = 1;
+          sec.questions.push(newQuestion(sec.type));
+        }
+        renderSections();
+        renderMeta();
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "q-img": {
+        if(!q) return;
+        if(q.image){
+          q.image = null;
+        }else{
+          const inp = cardEl && $('[data-imginput="main"]', cardEl);
+          if(inp) inp.click();
+          return;
+        }
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "q-or-img": {
+        if(!q) return;
+        if(q.orImage){
+          q.orImage = null;
+        }else{
+          const inp = cardEl && $('[data-imginput="or"]', cardEl);
+          if(inp) inp.click();
+          return;
+        }
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "q-or": {
+        if(!q) return;
+        if(q.useOr){
+          const hasContent = (q.orText && q.orText.trim()) || q.orImage || hasAnyText(q.orSubparts);
+          if(hasContent && !confirm("Remove the OR alternative and its content?")) return;
+          q.useOr = false;
+        }else{
+          q.useOr = true;
+        }
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "or-del": {
+        if(!q) return;
+        const hasOrContent = (q.orText && q.orText.trim()) || q.orImage || hasAnyText(q.orSubparts);
+        if(hasOrContent && !confirm("Remove the OR alternative and its content?")) return;
+        q.useOr = false;
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "q-subs": {
+        if(!q) return;
+        if(q.subparts.length){
+          if(hasAnyText(q.subparts) && !confirm("Remove all subdivisions and their text?")) return;
+          q.subparts = [];
+        }else{
+          q.subparts = ["", "", ""];
+        }
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "sub-add": {
+        if(!q) return;
+        const isOr = t.dataset.or === "1";
+        const arr = isOr ? q.orSubparts : q.subparts;
+        if(arr.length >= 12) return;
+        arr.push("");
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "sub-del": {
+        if(!q) return;
+        const isOr = t.dataset.or === "1";
+        const arr = isOr ? q.orSubparts : q.subparts;
+        arr.splice(+t.dataset.si, 1);
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "or-subs": {
+        if(!q) return;
+        if(q.orSubparts.length){
+          if(hasAnyText(q.orSubparts) && !confirm("Remove all subdivisions and their text?")) return;
+          q.orSubparts = [];
+        }else{
+          q.orSubparts = ["", "", ""];
+        }
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "q-table": {
+        if(!q) return;
+        if(q.table){
+          if(tableHasText(q.table) && !confirm("Remove this table and its content?")) return;
+          q.table = null;
+        }else{
+          q.table = defaultTable(2, 4);
+        }
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "or-table": {
+        if(!q) return;
+        if(q.orTable){
+          if(tableHasText(q.orTable) && !confirm("Remove this table and its content?")) return;
+          q.orTable = null;
+        }else{
+          q.orTable = defaultTable(2, 4);
+        }
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "tbl-add-row": {
+        if(!q) return;
+        const tbl = tableFor(q, t);
+        if(!tbl) return;
+        const cols = tbl.rows[0].length;
+        tbl.rows.push(Array.from({length: cols}, () => ""));
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "tbl-add-col": {
+        if(!q) return;
+        const tbl = tableFor(q, t);
+        if(!tbl || tbl.rows[0].length >= 10) return;
+        tbl.rows.forEach(r => r.push(""));
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "tbl-del-row": {
+        if(!q) return;
+        const tbl = tableFor(q, t);
+        if(!tbl) return;
+        if(tbl.rows.length > 1) tbl.rows.pop();
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "tbl-del-col": {
+        if(!q) return;
+        const tbl = tableFor(q, t);
+        if(!tbl) return;
+        if(tbl.rows[0].length > 1) tbl.rows.forEach(r => r.pop());
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "tbl-del": {
+        if(!q) return;
+        const wrap = t.closest("[data-tbltarget]");
+        const key = (wrap && wrap.dataset.tbltarget === "or") ? "orTable" : "table";
+        const tbl = q[key];
+        if(tbl && tableHasText(tbl) && !confirm("Remove this table and its content?")) return;
+        q[key] = null;
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "img-del": {
+        if(!q) return;
+        if(t.dataset.or === "1") q.orImage = null;
+        else q.image = null;
+        refreshQCard(sec, qi);
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "instr-del": {
+        state.instructions.splice(+t.dataset.i, 1);
+        renderInstr();
+        updatePreview();
+        scheduleSave();
+        break;
+      }
+      case "add-instr": {
+        state.instructions.push("");
+        renderInstr();
+        const areas = $$("#instr-list textarea");
+        if(areas.length) areas[areas.length - 1].focus();
+        scheduleSave();
+        break;
+      }
+      case "auto-instr": {
+        addSectionSummary();
+        break;
+      }
+      case "add-section": {
+        const sec2 = mkSection({type:"short", marks:2, count:1});
+        state.sections.push(sec2);
+        renderSections();
+        renderMeta();
+        updatePreview();
+        scheduleSave();
+        requestAnimationFrame(() => {
+          const el = document.querySelector('.section-card[data-sid="' + sec2.id + '"]');
+          if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
+        });
+        break;
+      }
+      case "export": {
+        exportDoc();
+        break;
+      }
+      case "print": {
+        window.print();
+        break;
+      }
+      case "reset": {
+        if(!confirm("Clear this paper and start fresh? Everything you have typed will be removed.")) return;
+        try{
+          localStorage.removeItem(STORAGE_KEY);
+        }catch(e){}
+        state = defaultState();
+        renderAll();
+        updatePreview();
+        toast("Started a fresh paper");
+        break;
+      }
+    }
+  });
+
+  /* ============================================================
+     input handlers (live typing, no re-render)
+     ============================================================ */
+  document.addEventListener("input", (e) => {
+    const t = e.target;
+
+    if(t.matches("[data-meta]")){
+      if(t.type === "checkbox") return;
+      state.meta[t.dataset.meta] = t.value;
+      updatePreview();
+      scheduleSave();
+      return;
+    }
+
+    if(t.matches("[data-instr]")){
+      state.instructions[+t.dataset.instr] = t.value;
+      autoGrow(t);
+      updatePreview();
+      scheduleSave();
+      return;
+    }
+
+    if(t.matches("[data-sattr]")){
+      if(t.tagName === "SELECT") return;
+      const sec = sectionOf(t);
+      if(!sec) return;
+      if(t.dataset.sattr === "marks"){
+        sec.marks = Math.max(0, parseInt(t.value, 10) || 0);
+        updatePreview();
+        updateTotals();
+      }
+      return;
+    }
+
+    if(t.matches("[data-qfield]")){
+      const sec = sectionOf(t);
+      const card = t.closest(".qcard");
+      if(!sec || !card) return;
+      const q = sec.questions[+card.dataset.q];
+      if(!q) return;
+      const f = t.dataset.qfield;
+
+      if(f === "text") q.text = t.value;
+      else if(f === "orText") q.orText = t.value;
+      else if(f === "opt") q.options[+t.dataset.oi] = t.value;
+      else if(f === "oropt"){
+        if(!Array.isArray(q.orOptions)) q.orOptions = ["", "", "", ""];
+        q.orOptions[+t.dataset.oi] = t.value;
+      }
+      else if(f === "sub"){
+        const arr = t.dataset.or === "1" ? q.orSubparts : q.subparts;
+        arr[+t.dataset.si] = t.value;
+      }else if(f === "imageWidth" || f === "orImageWidth"){
+        q[f] = +t.value || 10;
+        const b = t.parentElement ? $("b", t.parentElement) : null;
+        if(b) b.textContent = t.value + " cm";
+      }
+
+      if(t.tagName === "TEXTAREA") autoGrow(t);
+      updatePreview();
+      scheduleSave();
+      return;
+    }
+
+    if(t.matches("[data-qcell]")){
+      const sec = sectionOf(t);
+      const card = t.closest(".qcard");
+      if(!sec || !card) return;
+      const q = sec.questions[+card.dataset.q];
+      const tbl = q && tableFor(q, t);
+      if(!tbl) return;
+      const parts = t.dataset.qcell.split("-");
+      const ri = +parts[0], ci = +parts[1];
+      if(tbl.rows[ri]) tbl.rows[ri][ci] = t.value;
+      updatePreview();
+      scheduleSave();
+    }
+  });
+
+  /* ============================================================
+     change handlers (structural)
+     ============================================================ */
+  document.addEventListener("change", async (e) => {
+    const t = e.target;
+
+    if(t.matches('[data-imginput]')){
+      const sec = sectionOf(t);
+      const card = t.closest(".qcard");
+      if(!sec || !card || !t.files || !t.files[0]) return;
+      const q = sec.questions[+card.dataset.q];
+      if(!q) return;
+      const isOr = t.dataset.imginput === "or";
+      const data = await readImageFile(t.files[0]);
+      t.value = "";
+      if(!data) return;
+      if(isOr) q.orImage = data;
+      else q.image = data;
+      refreshQCard(sec, +card.dataset.q);
+      updatePreview();
+      scheduleSave();
+      toast(isOr ? "Image added to OR alternative" : "Image added to question");
+      return;
+    }
+
+    if(t.matches('[data-meta="autoMarks"]')){
+      if(!t.checked) state.meta.maxMarks = String(paperTotal());
+      state.meta.autoMarks = t.checked;
+      renderMeta();
+      updatePreview();
+      scheduleSave();
+      return;
+    }
+
+    if(t.matches('[data-meta="endMark"]')){
+      state.meta.endMark = t.checked;
+      updatePreview();
+      scheduleSave();
+      return;
+    }
+
+    if(t.matches("[data-sattr]")){
+      const sec = sectionOf(t);
+      if(!sec) return;
+      const k = t.dataset.sattr;
+
+      if(k === "count"){
+        let n = Math.max(1, Math.min(60, parseInt(t.value, 10) || 1));
+        while(sec.questions.length < n) sec.questions.push(newQuestion(sec.type));
+        while(sec.questions.length > n) sec.questions.pop();
+        sec.count = n;
+        renderSections();
+        renderMeta();
+        updatePreview();
+        scheduleSave();
+      }else if(k === "type"){
+        sec.type = t.value;
+        if(sec.type === "mcq"){
+          sec.questions.forEach(q => {
+            if(!Array.isArray(q.options) || q.options.length !== 4) q.options = ["", "", "", ""];
+            if(!Array.isArray(q.orOptions) || q.orOptions.length !== 4) q.orOptions = ["", "", "", ""];
+          });
+        }
+        if(sec.type === "case"){
+          sec.questions.forEach(q => { if(!q.subparts.length) q.subparts = ["", "", ""]; });
+        }
+        if(sec.type !== "mcq") sec.optionsPerRow = 2;
+        renderSections();
+        updatePreview();
+        scheduleSave();
+      }else if(k === "marks"){
+        sec.marks = Math.max(1, Math.min(100, parseInt(t.value, 10) || 1));
+        renderSections();
+        renderMeta();
+        updatePreview();
+        scheduleSave();
+      }else if(k === "optionsPerRow"){
+        sec.optionsPerRow = +t.value === 4 ? 4 : 2;
+        updatePreview();
+        scheduleSave();
+      }
+      return;
+    }
+
+    if(t.matches('[data-tbl="header"]')){
+      const sec = sectionOf(t);
+      const card = t.closest(".qcard");
+      const q = sec && card ? sec.questions[+card.dataset.q] : null;
+      const tbl = q && tableFor(q, t);
+      if(tbl){
+        tbl.header = t.checked;
+        updatePreview();
+        scheduleSave();
+      }
+    }
+  });
+
+  /* ============================================================
+     instruction summary
+     ============================================================ */
+  function addSectionSummary(){
+    const active = state.sections.filter(s => s.count > 0);
+    if(!active.length) return;
+    const total = active.reduce((a, s) => a + s.count, 0);
+    const letters = active.map((s, i) => LETTERS[i]);
+    const list = active.map((s, i) =>
+      "Section " + LETTERS[i] + " comprises " + s.count + " question" + (s.count === 1 ? "" : "s") +
+      " of " + s.marks + " mark" + (s.marks === 1 ? "" : "s") + " each"
+    ).join(", ");
+    state.instructions.push(
+      "The question paper consists of " + total + " question" + (total === 1 ? "" : "s") +
+      " divided into " + active.length + " section" + (active.length === 1 ? "" : "s") + " " +
+      letters.join(", ") + ". " + list + "."
+    );
+    renderInstr();
+    updatePreview();
+    scheduleSave();
+    toast("Section summary added");
+  }
+
+  /* ============================================================
+     Word export (MHTML-based .doc — editable in Word)
+     ============================================================ */
+  function paperTitle(){
+    const subject = String(state.meta.subject || "").replace(/^Subject\s*:\s*/i, "").trim();
+    const exam = String(state.meta.exam || "").trim();
+    return [exam, subject].filter(Boolean).join(" - ") || "Question Paper";
+  }
+  function fileSafe(name){
+    return String(name).replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80) || "Question Paper";
+  }
+  function downloadBlob(blob, name){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  function exportDoc(){
+    try{
+      if(!window.PapercraftDocx) throw new Error("The Word exporter is not loaded.");
+      const blob = window.PapercraftDocx.buildDocxBlob(state);
+      downloadBlob(blob, fileSafe(paperTitle()) + ".docx");
+      toast("Word file downloaded");
+    }catch(err){
+      console.error(err);
+      alert("Could not export: " + err.message);
+    }
+  }
+
+  /* ============================================================
+     init
+     ============================================================ */
+  renderAll();
+  updatePreview();
+  requestAnimationFrame(() => {
+    fitPreview();
+    autoGrowAll(document);
+  });
+
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(fitPreview, 120);
+  });
+  window.addEventListener("beforeprint", fitPreview);
+
+})();
+</script>
+</body>
+</html>
