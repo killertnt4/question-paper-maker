@@ -269,9 +269,72 @@
     font-family:"Times New Roman",Times,Georgia,serif;font-size:11pt;line-height:1.45;
     box-shadow:0 1px 4px rgba(24,26,32,.10),0 22px 60px rgba(24,26,32,.10);
   }
-  .page sup{font-size:7.5pt;line-height:0}
-  .page sub{font-size:7.5pt;line-height:0}
+  /* ---------- maths ---------- */
+  .m-frac{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+    vertical-align:middle;margin:0 .12em;line-height:1.12;text-align:center}
+  .m-frac > .m-frac-n{padding:0 .16em .03em;line-height:1.15}
+  .m-frac > .m-frac-d{padding:.03em .16em 0;border-top:1.1px solid currentColor;line-height:1.15}
+  .m-sqrt{display:inline-flex;align-items:stretch;vertical-align:middle;margin:0 .06em}
+  .m-sqrt > .m-rad{font-family:"Cambria Math","Segoe UI Symbol","Times New Roman",serif;
+    font-size:1.3em;line-height:1;align-self:center;margin-right:-.055em}
+  .m-sqrt > .m-rad-body{border-top:1.1px solid currentColor;padding:.04em .18em 0 .04em;line-height:1.18}
+  .m-matrix{display:inline-flex;align-items:stretch;vertical-align:middle;margin:0 .1em}
+  .m-mgrid{display:inline-flex;flex-direction:column;justify-content:center;gap:.14em;padding:0 .16em}
+  .m-mrow{display:flex;justify-content:center;gap:1.1em}
+  .m-mcell{display:block;text-align:center;min-width:1.05em;line-height:1.22}
+  .m-brk{display:inline-block;width:.3em;position:relative;flex:none}
+  .m-brk-l{border-left:1.2px solid currentColor}
+  .m-brk-r{border-right:1.2px solid currentColor}
+  .m-brk-l::before,.m-brk-l::after,.m-brk-r::before,.m-brk-r::after{
+    content:"";position:absolute;width:.28em;height:1.2px;background:currentColor}
+  .m-brk-l::before{left:0;top:0}
+  .m-brk-l::after{left:0;bottom:0}
+  .m-brk-r::before{right:0;top:0}
+  .m-brk-r::after{right:0;bottom:0}
+  .m-matrix.m-round > .m-brk{width:.42em;border-top:1.2px solid currentColor;
+    border-bottom:1.2px solid currentColor}
+  .m-matrix.m-round > .m-brk-l{border-left:1.2px solid currentColor;border-radius:.5em 0 0 .5em}
+  .m-matrix.m-round > .m-brk-r{border-right:1.2px solid currentColor;border-radius:0 .5em .5em 0}
+  .m-matrix.m-round > .m-brk::before,.m-matrix.m-round > .m-brk::after{display:none}
+  .m-big{font-family:"Cambria Math","Segoe UI Symbol","Times New Roman",serif;
+    font-size:1.5em;line-height:1;vertical-align:-.2em;margin:0 .05em}
+  .page sup,.mathhelp sup{font-size:.68em;line-height:0;vertical-align:.55em}
+  .page sub,.mathhelp sub{font-size:.68em;line-height:0;vertical-align:-.22em}
   .qblank{color:#b7b3a8;font-style:italic}
+
+  /* ---------- maths toolbar ---------- */
+  .mathbar{position:sticky;top:64px;z-index:30;display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+    background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;
+    margin-bottom:14px;box-shadow:var(--shadow)}
+  .mathbar .mlabel{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--muted);margin-right:2px}
+  .mbtn{font-family:"Times New Roman",Georgia,serif;font-size:15px;min-width:34px;height:32px;
+    padding:0 8px;border:1.5px solid var(--line2);border-radius:8px;background:#fbfaf6;
+    color:#2f333a;cursor:pointer;line-height:1;transition:background .12s,border-color .12s}
+  .mbtn:hover{background:#f0eee6;border-color:#b8b2a3}
+  .mbtn sup,.mbtn sub{font-size:.62em;line-height:0}
+  .msep{width:1px;height:22px;background:var(--line2);margin:0 3px}
+  .mgrow{flex:1}
+  .mathmore{flex:0 0 100%;display:flex;flex-wrap:wrap;gap:6px;padding-top:7px;
+    border-top:1px dashed var(--line2)}
+  .mathmore[hidden]{display:none}
+
+  /* ---------- maths help ---------- */
+  .modal{position:fixed;inset:0;z-index:90;background:rgba(24,26,32,.45);
+    display:flex;align-items:center;justify-content:center;padding:20px}
+  .modal[hidden]{display:none}
+  .modal-card{background:#fff;border-radius:14px;max-width:640px;width:100%;max-height:84vh;
+    overflow:auto;padding:20px 22px;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+  .modal-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .modal-head strong{font-size:16px}
+  .modal-head .icon-btn{margin-left:auto;width:30px;height:30px}
+  .mathhelp{font-family:"Times New Roman",Georgia,serif;font-size:15px}
+  .math-table{width:100%;border-collapse:collapse;margin:8px 0 4px}
+  .math-table th,.math-table td{border-bottom:1px solid var(--line);padding:8px;
+    text-align:left;font-size:13.5px;vertical-align:middle}
+  .math-table th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .math-table td:first-child{width:46%}
+  .math-table td.mathdemo{font-family:"Times New Roman",Georgia,serif;font-size:15.5px}
 
   /* ---------- toast ---------- */
   .toast{
@@ -343,6 +406,62 @@
 <main class="workspace">
   <section class="editor-col">
 
+    <div class="mathbar" id="mathbar">
+      <span class="mlabel">Maths</span>
+      <button class="mbtn" data-math="sup" title="Superscript — inserts ^{}">x<sup>2</sup></button>
+      <button class="mbtn" data-math="sub" title="Subscript — inserts _{}">x<sub>1</sub></button>
+      <button class="mbtn" data-math="frac" title="Fraction — inserts ()/()">a⁄b</button>
+      <button class="mbtn" data-math="sqrt" title="Square root — inserts sqrt()">√</button>
+      <button class="mbtn" data-math="int" title="Integral sign">∫</button>
+      <button class="mbtn" data-math="matrix" title="Matrix — inserts [1 2; 3 4]">[ ⋯ ]</button>
+      <span class="msep"></span>
+      <button class="mbtn" data-sym="×" title="Multiplication">×</button>
+      <button class="mbtn" data-sym="÷" title="Division">÷</button>
+      <button class="mbtn" data-sym="≤" title="Less than or equal">≤</button>
+      <button class="mbtn" data-sym="≥" title="Greater than or equal">≥</button>
+      <button class="mbtn" data-sym="≠" title="Not equal">≠</button>
+      <button class="mbtn" data-sym="π" title="Pi">π</button>
+      <button class="mbtn" data-act="math-more" title="More symbols">More ▾</button>
+      <span class="mgrow"></span>
+      <button class="link" data-act="math-help">What can I type?</button>
+      <div class="mathmore" id="mathmore" hidden>
+        <button class="mbtn" data-sym="±" title="Plus or minus">±</button>
+        <button class="mbtn" data-sym="∓" title="Minus or plus">∓</button>
+        <button class="mbtn" data-sym="≈" title="Approximately equal">≈</button>
+        <button class="mbtn" data-sym="≡" title="Identical to">≡</button>
+        <button class="mbtn" data-sym="∼" title="Similar">∼</button>
+        <button class="mbtn" data-sym="∝" title="Proportional to">∝</button>
+        <button class="mbtn" data-sym="∞" title="Infinity">∞</button>
+        <button class="mbtn" data-sym="°" title="Degrees">°</button>
+        <button class="mbtn" data-sym="Δ" title="Delta">Δ</button>
+        <button class="mbtn" data-sym="Σ" title="Sigma / sum">Σ</button>
+        <button class="mbtn" data-sym="∏" title="Product">∏</button>
+        <button class="mbtn" data-sym="∂" title="Partial derivative">∂</button>
+        <button class="mbtn" data-sym="∇" title="Nabla">∇</button>
+        <button class="mbtn" data-sym="θ" title="Theta">θ</button>
+        <button class="mbtn" data-sym="α" title="Alpha">α</button>
+        <button class="mbtn" data-sym="β" title="Beta">β</button>
+        <button class="mbtn" data-sym="γ" title="Gamma">γ</button>
+        <button class="mbtn" data-sym="μ" title="Mu">μ</button>
+        <button class="mbtn" data-sym="ω" title="Omega">ω</button>
+        <button class="mbtn" data-sym="∈" title="Element of">∈</button>
+        <button class="mbtn" data-sym="∉" title="Not an element of">∉</button>
+        <button class="mbtn" data-sym="∪" title="Union">∪</button>
+        <button class="mbtn" data-sym="∩" title="Intersection">∩</button>
+        <button class="mbtn" data-sym="⊂" title="Subset">⊂</button>
+        <button class="mbtn" data-sym="⊆" title="Subset or equal">⊆</button>
+        <button class="mbtn" data-sym="⊥" title="Perpendicular">⊥</button>
+        <button class="mbtn" data-sym="∥" title="Parallel">∥</button>
+        <button class="mbtn" data-sym="∴" title="Therefore">∴</button>
+        <button class="mbtn" data-sym="∵" title="Because">∵</button>
+        <button class="mbtn" data-sym="⇒" title="Implies">⇒</button>
+        <button class="mbtn" data-sym="⇔" title="If and only if">⇔</button>
+        <button class="mbtn" data-sym="→" title="Arrow">→</button>
+        <button class="mbtn" data-sym="↔" title="Both ways">↔</button>
+        <button class="mbtn" data-sym="∠" title="Angle">∠</button>
+      </div>
+    </div>
+
     <div class="card">
       <h2><span class="step">1</span> Paper details</h2>
       <div id="meta-fields"></div>
@@ -382,6 +501,26 @@
     </div>
   </aside>
 </main>
+
+<div class="modal mathhelp" id="math-help" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <strong>Typing maths</strong>
+      <button class="icon-btn" data-act="math-help-close" title="Close">✕</button>
+    </div>
+    <p class="mini">Type in any question, option, sub-part, table cell or instruction. The preview and
+      the Word file update as you type. The <b>Maths</b> bar inserts ready-made snippets.</p>
+    <table class="math-table">
+      <thead><tr><th>Type this</th><th>You get</th></tr></thead>
+      <tbody id="math-help-body"></tbody>
+    </table>
+    <p class="mini">LaTeX habits work too: <code>\frac{a}{b}</code>, <code>\sqrt{x}</code>,
+      <code>\int</code>, <code>\times</code>, <code>\pi</code>, <code>\le</code>,
+      <code>\infty</code>. In the Word file these become real equations you can edit.</p>
+    <p class="mini">Tip: wrap the whole numerator and denominator in brackets —
+      <code>(x^2+1)/(2x)</code> — so it is read as one fraction.</p>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -443,6 +582,7 @@
   var NS_WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
   var NS_A = "http://schemas.openxmlformats.org/drawingml/2006/main";
   var NS_PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture";
+  var NS_M = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 
   var XML_DECL = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
 
@@ -555,6 +695,533 @@
   }
 
   /* ================================================================
+     Maths: notation -> HTML and OMML
+     ================================================================
+     One parser feeds both the live preview and the Word export, so a
+     formula looks the same on screen, in print and inside Word.
+
+       x^2  x^{n+1}       superscript
+       x_1  x_{n+1}       subscript
+       (a)/(b)            stacked fraction; bare a/b also works for
+                          short terms such as 1/2, x/3 or 2x/3
+       [1 4z; 3x 99]      matrix: rows by ';', cells by space or comma
+       sqrt(x)  √(x)      square root
+       ∫  ∬  ∮  Σ  ∏    large operators
+       \frac{a}{b}  \sqrt{x}  \int  ...   LaTeX aliases
+
+     Anything the parser does not recognise stays literal text, so no
+     content is ever lost.
+     ================================================================ */
+
+  var MT_TEXT = 0, MT_SPACE = 1, MT_FRAC = 2, MT_MATRIX = 3,
+      MT_SQRT = 4, MT_SUP = 5, MT_SUB = 6, MT_BIG = 7, MT_ROW = 8;
+
+  var BIG_CHARS = "\u222b\u222c\u222e\u2211\u220f\u22c3\u22c2";
+
+  var LATEX_SYMBOLS = {
+    int: "\u222b", iint: "\u222c", oint: "\u222e", sum: "\u2211", prod: "\u220f",
+    bigcup: "\u22c3", bigcap: "\u22c2",
+    pm: "\u00b1", mp: "\u2213", times: "\u00d7", div: "\u00f7", cdot: "\u00b7",
+    ast: "\u2217", star: "\u22c6",
+    le: "\u2264", leq: "\u2264", ge: "\u2265", geq: "\u2265", ne: "\u2260",
+    neq: "\u2260", approx: "\u2248", equiv: "\u2261", sim: "\u223c", propto: "\u221d",
+    infty: "\u221e", partial: "\u2202", nabla: "\u2207", angle: "\u2220",
+    perp: "\u22a5", parallel: "\u2225", therefore: "\u2234", because: "\u2235",
+    in: "\u2208", notin: "\u2209", subset: "\u2282", subseteq: "\u2286",
+    supset: "\u2283", supseteq: "\u2287", cup: "\u222a", cap: "\u2229",
+    emptyset: "\u2205", forall: "\u2200", exists: "\u2203",
+    rightarrow: "\u2192", to: "\u2192", leftarrow: "\u2190",
+    leftrightarrow: "\u2194", Rightarrow: "\u21d2", Leftarrow: "\u21d0",
+    Leftrightarrow: "\u21d4",
+    degree: "\u00b0", deg: "\u00b0", prime: "\u2032",
+    alpha: "\u03b1", beta: "\u03b2", gamma: "\u03b3", delta: "\u03b4",
+    epsilon: "\u03b5", zeta: "\u03b6", eta: "\u03b7", theta: "\u03b8",
+    iota: "\u03b9", kappa: "\u03ba", lambda: "\u03bb", mu: "\u03bc",
+    nu: "\u03bd", xi: "\u03be", pi: "\u03c0", rho: "\u03c1", sigma: "\u03c3",
+    tau: "\u03c4", upsilon: "\u03c5", phi: "\u03c6", chi: "\u03c7",
+    psi: "\u03c8", omega: "\u03c9",
+    Gamma: "\u0393", Delta: "\u0394", Theta: "\u0398", Lambda: "\u039b",
+    Xi: "\u039e", Pi: "\u03a0", Sigma: "\u03a3", Phi: "\u03a6",
+    Psi: "\u03a8", Omega: "\u03a9"
+  };
+
+  var LATEX_NAMES = (function () {
+    var names = [];
+    for (var k in LATEX_SYMBOLS) {
+      if (Object.prototype.hasOwnProperty.call(LATEX_SYMBOLS, k)) names.push(k);
+    }
+    return names.sort(function (a, b) { return b.length - a.length; });
+  })();
+  var LATEX_RE = new RegExp("^\\\\(?:" + LATEX_NAMES.join("|") + ")(?![A-Za-z])");
+
+  function MathNode(type) {
+    this.type = type;
+    this.text = "";
+    this.base = null;
+    this.script = null;
+    this.num = null;
+    this.den = null;
+    this.rows = null;
+    this.children = null;
+    this.open = "(";
+    this.close = ")";
+  }
+
+  function mathText(value) { var n = new MathNode(MT_TEXT); n.text = value; return n; }
+  function mathSpace() { return new MathNode(MT_SPACE); }
+  function mathBig(value) { var n = new MathNode(MT_BIG); n.text = value; return n; }
+  function mathRow(children) { var n = new MathNode(MT_ROW); n.children = children; return n; }
+
+  function mathMatch(src, start, open, close) {
+    var depth = 0;
+    for (var i = start; i < src.length; i++) {
+      var c = src.charAt(i);
+      if (c === open) depth++;
+      else if (c === close) {
+        depth--;
+        if (depth === 0) return i;
+      }
+    }
+    return -1;
+  }
+
+  function parseMathLine(line) {
+    var p = { src: line == null ? "" : String(line), i: 0 };
+    return mathSequence(p);
+  }
+
+  function mathSequence(p) {
+    var src = p.src, len = src.length, out = [];
+    while (p.i < len) {
+      var c = src.charAt(p.i);
+
+      if (c === " " || c === "\t") {
+        out.push(mathSpace());
+        p.i++;
+        continue;
+      }
+
+      if (c === "^" || c === "_") {
+        var mark = p.i;
+        p.i++;
+        var script = mathScript(p);
+        if (script == null) {
+          out.push(mathText(c));
+          continue;
+        }
+        while (out.length && out[out.length - 1].type === MT_SPACE) out.pop();
+        if (!out.length) {
+          out.push(mathText(c));
+          for (var s = 0; s < script.length; s++) out.push(script[s]);
+          continue;
+        }
+        var base = out.pop();
+        if (base.type === MT_TEXT && base.text.length > 1) {
+          out.push(mathText(base.text.slice(0, -1)));
+          base = mathText(base.text.slice(-1));
+        }
+        var node = new MathNode(c === "^" ? MT_SUP : MT_SUB);
+        node.base = base;
+        node.script = script;
+        out.push(node);
+        continue;
+      }
+
+      if (c === "(" || c === "[") {
+        var close = c === "(" ? ")" : "]";
+        var end = mathMatch(src, p.i, c, close);
+        if (end > p.i) {
+          var inner = src.slice(p.i + 1, end);
+
+          var slash = end + 1;
+          if (slash < len && src.charAt(slash) === "/") {
+            var denStart = slash + 1;
+            while (denStart < len && src.charAt(denStart) === " ") denStart++;
+            if (denStart < len && (src.charAt(denStart) === "(" || src.charAt(denStart) === "[")) {
+              var dc = src.charAt(denStart);
+              var dclose = dc === "(" ? ")" : "]";
+              var denEnd = mathMatch(src, denStart, dc, dclose);
+              if (denEnd > denStart) {
+                var frac = new MathNode(MT_FRAC);
+                frac.num = parseMathLine(inner);
+                frac.den = parseMathLine(src.slice(denStart + 1, denEnd));
+                out.push(frac);
+                p.i = denEnd + 1;
+                continue;
+              }
+            }
+          }
+
+          if (mathHasTopSemicolon(inner)) {
+            var rows = mathMatrixRows(inner);
+            if (rows) {
+              var matrix = new MathNode(MT_MATRIX);
+              matrix.rows = rows;
+              matrix.open = c;
+              matrix.close = close;
+              out.push(matrix);
+              p.i = end + 1;
+              continue;
+            }
+          }
+
+          out.push(mathText(c));
+          var inside = parseMathLine(inner);
+          for (var j = 0; j < inside.length; j++) out.push(inside[j]);
+          out.push(mathText(close));
+          p.i = end + 1;
+          continue;
+        }
+      }
+
+      var latex = /^\\(frac|sqrt)(?![A-Za-z])/.exec(src.slice(p.i));
+      if (latex) {
+        var after = p.i + latex[0].length;
+        if (latex[1] === "frac" && src.charAt(after) === "{") {
+          var numEnd = mathMatch(src, after, "{", "}");
+          if (numEnd > -1) {
+            var dstart = numEnd + 1;
+            while (dstart < len && src.charAt(dstart) === " ") dstart++;
+            if (src.charAt(dstart) === "{") {
+              var dend = mathMatch(src, dstart, "{", "}");
+              if (dend > -1) {
+                var lf = new MathNode(MT_FRAC);
+                lf.num = parseMathLine(src.slice(after + 1, numEnd));
+                lf.den = parseMathLine(src.slice(dstart + 1, dend));
+                out.push(lf);
+                p.i = dend + 1;
+                continue;
+              }
+            }
+          }
+        }
+        if (latex[1] === "sqrt" && (src.charAt(after) === "{" || src.charAt(after) === "(")) {
+          var ropen = src.charAt(after);
+          var rclose = ropen === "{" ? "}" : ")";
+          var rend = mathMatch(src, after, ropen, rclose);
+          if (rend > after) {
+            var lr = new MathNode(MT_SQRT);
+            lr.children = parseMathLine(src.slice(after + 1, rend));
+            out.push(lr);
+            p.i = rend + 1;
+            continue;
+          }
+        }
+      }
+
+      if (src.slice(p.i, p.i + 4).toLowerCase() === "sqrt" && p.i + 4 < len) {
+        var next = src.charAt(p.i + 4);
+        if (next === "(" || next === "{") {
+          var nextClose = next === "(" ? ")" : "}";
+          var sqrtEnd = mathMatch(src, p.i + 4, next, nextClose);
+          if (sqrtEnd > p.i + 4) {
+            var root = new MathNode(MT_SQRT);
+            root.children = parseMathLine(src.slice(p.i + 5, sqrtEnd));
+            out.push(root);
+            p.i = sqrtEnd + 1;
+            continue;
+          }
+        }
+      }
+
+      if (c === "\u221a") {
+        p.i++;
+        if (src.charAt(p.i) === "(") {
+          var gEnd = mathMatch(src, p.i, "(", ")");
+          if (gEnd > p.i) {
+            var gRoot = new MathNode(MT_SQRT);
+            gRoot.children = parseMathLine(src.slice(p.i + 1, gEnd));
+            out.push(gRoot);
+            p.i = gEnd + 1;
+            continue;
+          }
+        }
+        out.push(mathBig("\u221a"));
+        continue;
+      }
+
+      if (BIG_CHARS.indexOf(c) >= 0) {
+        out.push(mathBig(c));
+        p.i++;
+        continue;
+      }
+
+      var symbol = LATEX_RE.exec(src.slice(p.i));
+      if (symbol) {
+        var value = LATEX_SYMBOLS[symbol[0].slice(1)];
+        out.push(BIG_CHARS.indexOf(value) >= 0 ? mathBig(value) : mathText(value));
+        p.i += symbol[0].length;
+        continue;
+      }
+
+      if (c === "/") {
+        if (out.length) {
+          var previous = out[out.length - 1];
+          if (mathy(previous)) {
+            var den = mathDenominator(p);
+            if (den) {
+              var divFrac = new MathNode(MT_FRAC);
+              divFrac.num = previous.type === MT_TEXT ? parseMathLine(previous.text) : [previous];
+              divFrac.den = den;
+              out.pop();
+              out.push(divFrac);
+              continue;
+            }
+          }
+        }
+        out.push(mathText("/"));
+        p.i++;
+        continue;
+      }
+
+      var start = p.i;
+      while (p.i < len) {
+        var d = src.charAt(p.i);
+        if (" \t^_()[]/\u222b\u222c\u222e\u2211\u220f\u22c3\u22c2\u221a,;:\\\\".indexOf(d) >= 0) break;
+        p.i++;
+      }
+      if (p.i === start) {
+        out.push(mathText(src.charAt(p.i)));
+        p.i++;
+      } else {
+        out.push(mathText(src.slice(start, p.i)));
+      }
+    }
+    return out;
+  }
+
+  function mathScript(p) {
+    var src = p.src;
+    if (p.i >= src.length) return null;
+    var c = src.charAt(p.i);
+    if (c === "{") {
+      var end = mathMatch(src, p.i, "{", "}");
+      if (end > -1) {
+        var inner = parseMathLine(src.slice(p.i + 1, end));
+        p.i = end + 1;
+        return inner;
+      }
+      return null;
+    }
+    if (c === "(") {
+      var pend = mathMatch(src, p.i, "(", ")");
+      if (pend > -1) {
+        var pinner = parseMathLine(src.slice(p.i + 1, pend));
+        p.i = pend + 1;
+        return pinner;
+      }
+      return null;
+    }
+    if (c === " " || c === "\t") return null;
+    p.i++;
+    return parseMathLine(c);
+  }
+
+  function mathDenominator(p) {
+    var src = p.src, start = p.i + 1;
+    while (start < src.length && src.charAt(start) === " ") start++;
+    if (start >= src.length) return null;
+    var c = src.charAt(start);
+    if (c === "(" || c === "[") {
+      var close = c === "(" ? ")" : "]";
+      var end = mathMatch(src, start, c, close);
+      if (end > start) {
+        p.i = end + 1;
+        return parseMathLine(src.slice(start + 1, end));
+      }
+      return null;
+    }
+    var wordEnd = start;
+    while (wordEnd < src.length) {
+      if (" \t^_()[]/\u222b\u222c\u222e\u2211\u220f\u22c3\u22c2\u221a,;:\u00b7\\\\".indexOf(src.charAt(wordEnd)) >= 0) break;
+      wordEnd++;
+    }
+    if (wordEnd === start) return null;
+    p.i = wordEnd;
+    return parseMathLine(src.slice(start, wordEnd));
+  }
+
+  function mathy(node) {
+    if (!node) return false;
+    if (node.type === MT_SQRT || node.type === MT_MATRIX ||
+        node.type === MT_SUP || node.type === MT_SUB) return true;
+    if (node.type === MT_TEXT) {
+      return /^(?:\d+(?:\.\d+)?|[A-Za-z\u0370-\u03ff]|\d+[A-Za-z]+|[A-Za-z\u0370-\u03ff]\d+)$/
+        .test(node.text);
+    }
+    return false;
+  }
+
+  function mathHasTopSemicolon(inner) {
+    var depth = 0;
+    for (var i = 0; i < inner.length; i++) {
+      var c = inner.charAt(i);
+      if (c === "(" || c === "[" || c === "{") depth++;
+      else if (c === ")" || c === "]" || c === "}") depth--;
+      else if (c === ";" && depth <= 0) return true;
+    }
+    return false;
+  }
+
+  function mathSplitTop(value, separator) {
+    var parts = [], depth = 0, start = 0;
+    for (var i = 0; i < value.length; i++) {
+      var c = value.charAt(i);
+      if (c === "(" || c === "[" || c === "{") depth++;
+      else if (c === ")" || c === "]" || c === "}") depth--;
+      else if (c === separator && depth <= 0) {
+        parts.push(value.slice(start, i));
+        start = i + 1;
+      }
+    }
+    parts.push(value.slice(start));
+    return parts;
+  }
+
+  function mathMatrixRows(inner) {
+    var rowTexts = mathSplitTop(inner, ";");
+    var rows = [];
+    for (var r = 0; r < rowTexts.length; r++) {
+      var cells = rowTexts[r].replace(/^\s+|\s+$/g, "").split(/[\s,]+/);
+      var row = [];
+      for (var c = 0; c < cells.length; c++) {
+        if (cells[c].length) row.push(mathRow(parseMathLine(cells[c])));
+      }
+      if (row.length) rows.push(row);
+    }
+    return rows.length ? rows : null;
+  }
+
+  /* ------------------------------------------------- HTML renderer */
+
+  function mathHtmlAll(nodes) {
+    var html = "";
+    if (!nodes) return html;
+    for (var i = 0; i < nodes.length; i++) html += mathHtmlNode(nodes[i]);
+    return html;
+  }
+
+  function mathHtmlNode(node) {
+    if (!node) return "";
+    switch (node.type) {
+      case MT_TEXT:
+        return escapeXml(node.text);
+      case MT_SPACE:
+        return " ";
+      case MT_SUP:
+        return mathHtmlNode(node.base) + "<sup>" + mathHtmlAll(node.script) + "</sup>";
+      case MT_SUB:
+        return mathHtmlNode(node.base) + "<sub>" + mathHtmlAll(node.script) + "</sub>";
+      case MT_FRAC:
+        return '<span class="m-frac"><span class="m-frac-n">' + mathHtmlAll(node.num) +
+          '</span><span class="m-frac-d">' + mathHtmlAll(node.den) + "</span></span>";
+      case MT_SQRT:
+        return '<span class="m-sqrt"><span class="m-rad">\u221a</span>' +
+          '<span class="m-rad-body">' + mathHtmlAll(node.children) + "</span></span>";
+      case MT_MATRIX:
+        return mathHtmlMatrix(node);
+      case MT_BIG:
+        return '<span class="m-big">' + escapeXml(node.text) + "</span>";
+      case MT_ROW:
+        return mathHtmlAll(node.children);
+      default:
+        return "";
+    }
+  }
+
+  function mathHtmlMatrix(node) {
+    var columns = 0, r, c;
+    for (r = 0; r < node.rows.length; r++) columns = Math.max(columns, node.rows[r].length);
+    if (!columns) return "";
+    var html = '<span class="m-matrix' + (node.open === "(" ? " m-round" : "") + '">' +
+      '<span class="m-brk m-brk-l"></span><span class="m-mgrid">';
+    for (r = 0; r < node.rows.length; r++) {
+      html += '<span class="m-mrow">';
+      for (c = 0; c < columns; c++) {
+        html += '<span class="m-mcell">' +
+          (c < node.rows[r].length ? mathHtmlNode(node.rows[r][c]) : "") + "</span>";
+      }
+      html += "</span>";
+    }
+    return html + '</span><span class="m-brk m-brk-r"></span></span>';
+  }
+
+  /* Public: raw notation -> HTML for the preview, print and dialog. */
+  function mathToHtml(raw) {
+    var text = sanitizeText(raw).replace(/\r\n?/g, "\n");
+    var lines = text.split("\n");
+    var out = [];
+    for (var i = 0; i < lines.length; i++) out.push(mathHtmlAll(parseMathLine(lines[i])));
+    return out.join("<br>");
+  }
+
+  /* ---------------------------------------------- WordprocessingML */
+
+  function mathOmmlAll(nodes) {
+    var xml = "";
+    if (!nodes) return xml;
+    for (var i = 0; i < nodes.length; i++) xml += mathOmmlNode(nodes[i]);
+    return xml;
+  }
+
+  function mathOmmlNode(node) {
+    if (!node) return "";
+    switch (node.type) {
+      case MT_TEXT:
+        return '<m:r><m:t xml:space="preserve">' + escapeXml(node.text) + "</m:t></m:r>";
+      case MT_SPACE:
+        return '<m:r><m:t xml:space="preserve"> </m:t></m:r>';
+      case MT_BIG:
+        return '<m:r><m:rPr><m:sty m:val="p"/></m:rPr>' +
+          '<w:rPr><w:sz w:val="44"/></w:rPr><m:t>' + escapeXml(node.text) + "</m:t></m:r>";
+      case MT_SUP:
+        return "<m:sSup><m:e>" + mathOmmlNode(node.base) + "</m:e><m:sup>" +
+          mathOmmlAll(node.script) + "</m:sup></m:sSup>";
+      case MT_SUB:
+        return "<m:sSub><m:e>" + mathOmmlNode(node.base) + "</m:e><m:sub>" +
+          mathOmmlAll(node.script) + "</m:sub></m:sSub>";
+      case MT_FRAC:
+        return "<m:f><m:num>" + mathOmmlAll(node.num) + "</m:num><m:den>" +
+          mathOmmlAll(node.den) + "</m:den></m:f>";
+      case MT_SQRT:
+        return '<m:rad><m:radPr><m:degHide m:val="1"/></m:radPr><m:deg/><m:e>' +
+          mathOmmlAll(node.children) + "</m:e></m:rad>";
+      case MT_MATRIX:
+        return mathOmmlMatrix(node);
+      case MT_ROW:
+        return mathOmmlAll(node.children);
+      default:
+        return "";
+    }
+  }
+
+  function mathOmmlMatrix(node) {
+    var columns = 0, r, c;
+    for (r = 0; r < node.rows.length; r++) columns = Math.max(columns, node.rows[r].length);
+    if (!columns) return "";
+
+    var xml = "<m:d><m:dPr>" +
+      '<m:begChr m:val="' + escapeXml(node.open) + '"/>' +
+      '<m:endChr m:val="' + escapeXml(node.close) + '"/>' +
+      '<m:grow m:val="1"/>' +
+      "</m:dPr><m:e>";
+
+    xml += "<m:m><m:mPr><m:mcs><m:mc><m:mcPr>" +
+      '<m:count m:val="' + columns + '"/>' +
+      '<m:mcJc m:val="center"/>' +
+      "</m:mcPr></m:mc></m:mcs></m:mPr>";
+
+    for (r = 0; r < node.rows.length; r++) {
+      xml += "<m:mr>";
+      for (c = 0; c < columns; c++) {
+        xml += "<m:e>" + (c < node.rows[r].length ? mathOmmlNode(node.rows[r][c]) : "") + "</m:e>";
+      }
+      xml += "</m:mr>";
+    }
+    return xml + "</m:m></m:e></m:d>";
+  }
+
+  /* ================================================================
      Rich text -> WordprocessingML runs
      ================================================================ */
 
@@ -594,30 +1261,44 @@
   }
 
   /*
-   * Parse the paper's tiny markup language:
-   *   x^2  x^{n+1}  -> superscript
-   *   x_1  x_{n+1}  -> subscript
-   *   newlines      -> <w:br/>
-   * Everything is escaped and unicode-safe.
+   * Rich text -> WordprocessingML runs.
+   * Plain words stay ordinary runs; maths becomes inline OMML, so the
+   * downloaded file contains real, editable Word equations.
+   * Newlines become <w:br/>.
    */
   function richRuns(raw, props) {
-    var s = sanitizeText(raw).replace(/\t/g, "    ");
-    var re = /\^\{([^}]*)\}|\^(-?\d+|[A-Za-z])|_\{([^}]*)\}|_([A-Za-z0-9])|\n/g;
+    var text = sanitizeText(raw).replace(/\t/g, "    ").replace(/\r\n?/g, "\n");
+    var lines = text.split("\n");
     var out = "";
-    var last = 0;
-    var m;
-    while ((m = re.exec(s)) !== null) {
-      if (m.index > last) out += runXml(s.slice(last, m.index), props);
-      if (m[0] === "\n") {
-        out += breakRun();
-      } else if (m[0].charAt(0) === "^") {
-        out += runXml(m[1] != null ? m[1] : m[2], withVert(props, "superscript"));
-      } else {
-        out += runXml(m[3] != null ? m[3] : m[4], withVert(props, "subscript"));
-      }
-      last = re.lastIndex;
+    for (var i = 0; i < lines.length; i++) {
+      if (i) out += breakRun();
+      out += mathLineRuns(lines[i], props);
     }
-    if (last < s.length) out += runXml(s.slice(last), props);
+    return out;
+  }
+
+  function mathLineRuns(line, props) {
+    var nodes = parseMathLine(line);
+    var out = "";
+    var plain = "";
+    function flush() {
+      if (plain.length) {
+        out += runXml(plain, props);
+        plain = "";
+      }
+    }
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (node.type === MT_TEXT) {
+        plain += node.text;
+      } else if (node.type === MT_SPACE) {
+        plain += " ";
+      } else {
+        flush();
+        out += "<m:oMath>" + mathOmmlNode(node) + "</m:oMath>";
+      }
+    }
+    flush();
     return out;
   }
 
@@ -1153,7 +1834,7 @@
     return XML_DECL +
       '<w:document xmlns:w="' + NS_W + '" xmlns:r="' + NS_R +
         '" xmlns:wp="' + NS_WP + '" xmlns:a="' + NS_A +
-        '" xmlns:pic="' + NS_PIC + '">' +
+        '" xmlns:pic="' + NS_PIC + '" xmlns:m="' + NS_M + '">' +
       "<w:body>" + bodyXml +
       '<w:sectPr><w:pgSz w:w="' + PAGE_W + '" w:h="' + PAGE_H + '"/>' +
         '<w:pgMar w:top="' + MARGIN_T + '" w:right="' + MARGIN_R +
@@ -1449,7 +2130,7 @@
     return new Blob([bytes], { type: DOCX_MIME });
   }
 
-  var api = { buildDocx: buildDocx, buildDocxBlob: buildDocxBlob };
+  var api = { buildDocx: buildDocx, buildDocxBlob: buildDocxBlob, mathToHtml: mathToHtml };
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
@@ -1498,8 +2179,12 @@
     return Math.random().toString(36).slice(2, 9);
   }
 
-  /* rich-text: escape, then turn ^2 / ^{...} into superscript and _1 into subscript */
+  /* rich text: maths through the shared engine (same as the Word export) */
   function fmt(raw){
+    const engine = window.PapercraftDocx;
+    if(engine && typeof engine.mathToHtml === "function"){
+      return engine.mathToHtml(raw);
+    }
     let s = esc(raw);
     s = s.replace(/\^\{([^}]*)\}/g, "<sup>$1</sup>")
          .replace(/\^(-?\d+|[A-Za-z])/g, "<sup>$1</sup>")
@@ -1775,7 +2460,7 @@
     if(subs.length){
       h += '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:2pt">';
       subs.forEach((t, i) => {
-        h += '<tr><td width="30" valign="top" style="font-size:11pt;line-height:1.45;padding:0 0 1pt 14pt">(' +
+        h += '<tr><td width="52" valign="top" style="font-size:11pt;line-height:1.45;padding:0 0 1pt 14pt">(' +
              (ROMAN[i] || (i + 1)) + ')</td>' +
              '<td valign="top" style="font-size:11pt;line-height:1.45;padding:0 0 1pt">' +
              (fmt(t) || "&nbsp;") + "</td></tr>";
@@ -1927,7 +2612,10 @@
     $("#meta-foot").innerHTML =
       '<label class="check"><input type="checkbox" data-meta="endMark"' + (m.endMark ? " checked" : "") +
       "> End the paper with ****************</label>" +
-      '<span class="mini">Type <code>x^2</code> for x² and <code>x_1</code> for x₁. Sections with <b>Auto</b> add up their marks.</span>';
+      '<span class="mini">Maths: <code>x^2</code>, <code>x_1</code>, <code>(a)/(b)</code>, ' +
+      '<code>[1 2; 3 4]</code>, <code>sqrt(x)</code>, <code>∫</code> — use the Maths bar above, ' +
+      'or <button type="button" class="link" data-act="math-help">see all notation</button>. ' +
+      'Sections with <b>Auto</b> add up their marks.</span>';
   }
 
   function renderInstr(){
@@ -2239,6 +2927,127 @@
       return dataUrl;
     }
   }
+
+  /* ============================================================
+     maths toolbar
+     ============================================================ */
+  const MATH_SNIPPETS = {
+    sup:    { text: "^{}", caret: 2 },
+    sub:    { text: "_{}", caret: 2 },
+    frac:   { text: "()/()", caret: 1 },
+    sqrt:   { text: "sqrt()", caret: 5 },
+    int:    { text: "∫", caret: 1 },
+    matrix: { text: "[1 2; 3 4]", select: true }
+  };
+  let lastMathField = null;
+
+  function mathField(el){
+    if(!el || el.disabled || el.readOnly) return null;
+    if(el.tagName === "TEXTAREA") return el;
+    if(el.tagName === "INPUT"){
+      const type = (el.type || "text").toLowerCase();
+      if(type === "text" || type === "search" || type === "tel" ||
+         type === "url" || type === "email") return el;
+    }
+    return null;
+  }
+
+  document.addEventListener("focusin", (e) => {
+    const field = mathField(e.target);
+    if(field) lastMathField = field;
+  });
+
+  /* Keep the caret in the text box when a maths button is pressed. */
+  document.addEventListener("mousedown", (e) => {
+    if(e.target.closest("[data-math],[data-sym],[data-act='math-more']," +
+        "[data-act='math-help'],[data-act='math-help-close']")){
+      e.preventDefault();
+    }
+  });
+
+  function insertMath(snippet){
+    const field = lastMathField;
+    if(!field || !document.documentElement.contains(field)){
+      toast("Tap a question box first, then press a maths button.");
+      return;
+    }
+    const value = field.value;
+    let start = field.selectionStart;
+    let end = field.selectionEnd;
+    if(typeof start !== "number"){ start = value.length; end = value.length; }
+    field.focus();
+
+    /* Prefer the native edit command so Ctrl+Z still undoes the insert. */
+    let inserted = false;
+    try{
+      inserted = document.execCommand("insertText", false, snippet.text);
+    }catch(e){ inserted = false; }
+    if(!inserted || field.value === value){
+      field.value = value.slice(0, start) + snippet.text + value.slice(end);
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    if(snippet.select){
+      field.setSelectionRange(start, start + snippet.text.length);
+    }else{
+      const caret = start + (snippet.caret == null ? snippet.text.length : snippet.caret);
+      field.setSelectionRange(caret, caret);
+    }
+    autoGrow(field);
+  }
+
+  function showMathHelp(){
+    const body = $("#math-help-body");
+    if(body && !body.dataset.ready){
+      const examples = [
+        ["x^2  or  x^{n+1}", "x^2"],
+        ["x_1  or  x_{n+1}", "x_1"],
+        ["(a+b)/(2)", "(a+b)/(2)"],
+        ["[1 4z; 3x 99; 4 7]", "[1 4z; 3x 99; 4 7]"],
+        ["sqrt(x+1)  or  √(x+1)", "sqrt(x+1)"],
+        ["∫x^2 dx", "∫x^2 dx"],
+        ["\\frac{a}{b}", "\\frac{a}{b}"],
+        ["\\sqrt{x} + \\pi", "\\sqrt{x} + \\pi"]
+      ];
+      body.innerHTML = examples.map(([code, demo]) =>
+        '<tr><td><code>' + esc(code) + '</code></td><td class="mathdemo">' + fmt(demo) + "</td></tr>"
+      ).join("");
+      body.dataset.ready = "1";
+    }
+    $("#math-help").hidden = false;
+  }
+
+  document.addEventListener("click", (e) => {
+    if(e.target.id === "math-help"){
+      e.target.hidden = true;
+      return;
+    }
+    const snippetBtn = e.target.closest("[data-math]");
+    if(snippetBtn){
+      insertMath(MATH_SNIPPETS[snippetBtn.dataset.math]);
+      return;
+    }
+    const symbolBtn = e.target.closest("[data-sym]");
+    if(symbolBtn){
+      const symbol = symbolBtn.dataset.sym;
+      insertMath({ text: symbol, caret: symbol.length });
+      return;
+    }
+    const action = e.target.closest("[data-act]");
+    if(!action) return;
+    if(action.dataset.act === "math-more"){
+      const more = $("#mathmore");
+      more.hidden = !more.hidden;
+      action.textContent = more.hidden ? "More ▾" : "Less ▴";
+    }else if(action.dataset.act === "math-help"){
+      showMathHelp();
+    }else if(action.dataset.act === "math-help-close"){
+      $("#math-help").hidden = true;
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") $("#math-help").hidden = true;
+  });
 
   /* ============================================================
      click handlers
